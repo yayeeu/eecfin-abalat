@@ -1,9 +1,9 @@
 
-import React, { useContext } from "react";
-import { AuthContext } from "../contexts/AuthContext";
+import React from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 const CustomFooter = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
 
   if (!user) return null;
 

@@ -1,13 +1,13 @@
 
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { AuthContext } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const CustomHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout } = useContext(AuthContext);
+  const { user, signOut } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -50,7 +50,7 @@ const CustomHeader = () => {
               >
                 Profile
               </Link>
-              <Button variant="outline" onClick={logout}>
+              <Button variant="outline" onClick={signOut}>
                 Logout
               </Button>
             </div>
@@ -76,7 +76,7 @@ const CustomHeader = () => {
             >
               Profile
             </Link>
-            <Button className="w-full mt-3" variant="outline" onClick={logout}>
+            <Button className="w-full mt-3" variant="outline" onClick={signOut}>
               Logout
             </Button>
           </div>

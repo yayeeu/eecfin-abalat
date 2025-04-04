@@ -1,14 +1,13 @@
 
-import { useContext } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext";
 
 interface AuthRouteProps {
   children: React.ReactNode;
 }
 
 const AuthRoute = ({ children }: AuthRouteProps) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
