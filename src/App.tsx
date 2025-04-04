@@ -25,6 +25,7 @@ const Constitution = lazy(() => import("./pages/Constitution"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
+const ManageMembers = lazy(() => import("./pages/ManageMembers"));
 
 // Configure the query client with performance optimizations
 const queryClient = new QueryClient({
@@ -68,6 +69,11 @@ const protectedRoutes = [
     path: "/profile", 
     element: <Profile />, 
     roles: ['admin', 'member', 'elder', 'it', 'volunteer'] as UserRole[] 
+  },
+  {
+    path: "/manage-members",
+    element: <ManageMembers />,
+    roles: ['admin', 'elder'] as UserRole[]
   }
 ];
 
@@ -134,6 +140,18 @@ const App = () => (
                       <Profile />
                     </Suspense>
                   </Layout>
+                </RoleGuard>
+              } 
+            />
+
+            {/* Manage Members Route */}
+            <Route 
+              path="/manage-members" 
+              element={
+                <RoleGuard allowedRoles={['admin', 'elder']}>
+                  <Suspense fallback={<PageLoader />}>
+                    <ManageMembers />
+                  </Suspense>
                 </RoleGuard>
               } 
             />
