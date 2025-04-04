@@ -6,9 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 export const mockMembers: Member[] = [
   {
     id: '1',
-    name: 'Yeteshawork Berhanu',
-    phone: '+358 41 522 58 89',
-    email: 'yeteshawork@example.com',
+    name: 'Elder John Smith',
+    phone: '+358 40 123 4567',
+    email: 'john.smith@example.com',
     role: 'elder',
     role_id: '1',
     status: 'active',
@@ -16,9 +16,9 @@ export const mockMembers: Member[] = [
   },
   {
     id: '2',
-    name: 'Bruke Wolde',
-    phone: '+358 451682997',
-    email: 'bruke@example.com',
+    name: 'Elder Mary Johnson',
+    phone: '+358 50 234 5678',
+    email: 'mary.johnson@example.com',
     role: 'elder',
     role_id: '1',
     status: 'active',
@@ -26,9 +26,9 @@ export const mockMembers: Member[] = [
   },
   {
     id: '3',
-    name: 'Hizekiel Daniel',
-    phone: '+358 449869685',
-    email: 'hizekiel@example.com',
+    name: 'Elder Robert Wilson',
+    phone: '+358 45 345 6789',
+    email: 'robert.wilson@example.com',
     role: 'elder',
     role_id: '1',
     status: 'active',
@@ -36,9 +36,9 @@ export const mockMembers: Member[] = [
   },
   {
     id: '4',
-    name: 'Mekbib Tekle',
-    phone: '+358 44 08 22 798',
-    email: 'mekbib@example.com',
+    name: 'Elder Elizabeth Davis',
+    phone: '+358 40 456 7890',
+    email: 'elizabeth.davis@example.com',
     role: 'elder',
     role_id: '1',
     status: 'active',
@@ -46,33 +46,91 @@ export const mockMembers: Member[] = [
   },
   {
     id: '5',
-    name: 'Tamirat Teshome',
-    phone: '+358 443514051',
-    email: 'tamirat@example.com',
-    role: 'elder',
-    role_id: '1',
+    name: 'Alice Brown',
+    phone: '+358 40 567 8901',
+    email: 'alice@example.com',
+    address: 'Mannerheimintie 1, Helsinki',
+    role: 'member',
+    role_id: '2',
     status: 'active',
     created_at: new Date().toISOString()
   },
   {
     id: '6',
-    name: 'John Doe',
-    phone: '+358 45 123 4567',
-    email: 'john@example.com',
+    name: 'Bob Johnson',
+    phone: '+358 50 678 9012',
+    email: 'bob@example.com',
+    address: 'Aleksanterinkatu 15, Helsinki',
     role: 'member',
     role_id: '2',
     status: 'active',
-    created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    created_at: new Date().toISOString()
   },
   {
     id: '7',
-    name: 'Jane Smith',
-    phone: '+358 44 765 4321',
-    email: 'jane@example.com',
-    role: 'member', // Changed from 'Volunteer' to a valid role
-    role_id: '4',
-    status: 'inactive',
-    created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+    name: 'Carol Davis',
+    phone: '+358 45 789 0123',
+    email: 'carol@example.com',
+    address: 'Tehtaankatu 25, Helsinki',
+    role: 'member',
+    role_id: '2',
+    status: 'active',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '8',
+    name: 'Daniel Wilson',
+    phone: '+358 40 890 1234',
+    email: 'daniel@example.com',
+    address: 'Bulevardi 10, Helsinki',
+    role: 'member',
+    role_id: '2',
+    status: 'active',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '9',
+    name: 'Eva Martin',
+    phone: '+358 50 901 2345',
+    email: 'eva@example.com',
+    address: 'Fredrikinkatu 30, Helsinki',
+    role: 'member',
+    role_id: '2',
+    status: 'active',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '10',
+    name: 'Frank Thomas',
+    phone: '+358 45 012 3456',
+    email: 'frank@example.com',
+    address: 'Annankatu 20, Helsinki',
+    role: 'member',
+    role_id: '2',
+    status: 'active',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '11',
+    name: 'Grace Lee',
+    phone: '+358 40 123 4567',
+    email: 'grace@example.com',
+    address: 'Iso Roobertinkatu 5, Helsinki',
+    role: 'member',
+    role_id: '2',
+    status: 'active',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '12',
+    name: 'Henry Clark',
+    phone: '+358 50 234 5678',
+    email: 'henry@example.com',
+    address: 'Eerikinkatu 12, Helsinki',
+    role: 'member',
+    role_id: '2',
+    status: 'active',
+    created_at: new Date().toISOString()
   },
 ];
 
@@ -80,14 +138,45 @@ export const mockMembers: Member[] = [
 export const mockElderAssignments: MemberUnderElder[] = [
   {
     id: '1',
-    member_id: '6',
+    member_id: '5',
     elder_id: '1',
     created_at: new Date().toISOString()
   },
   {
     id: '2',
+    member_id: '6',
+    elder_id: '1',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '3',
     member_id: '7',
     elder_id: '2',
     created_at: new Date().toISOString()
-  }
+  },
+  {
+    id: '4',
+    member_id: '8',
+    elder_id: '2',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '5',
+    member_id: '9',
+    elder_id: '3',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '6',
+    member_id: '10',
+    elder_id: '3',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '7',
+    member_id: '11',
+    elder_id: '4',
+    created_at: new Date().toISOString()
+  },
+  // Member 12 is intentionally left unassigned
 ];

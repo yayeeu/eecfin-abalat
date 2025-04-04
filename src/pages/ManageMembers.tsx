@@ -8,23 +8,26 @@ import ElderBucket from '@/components/members/ElderBucket';
 import CustomLayout from '@/components/CustomLayout';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAllMembers, getElderMembers, assignElderToMember, removeElderAssignment } from '@/lib/memberService';
+import { populateWithSampleData } from '@/lib/services/elderService';
 import { Member } from '@/types/database.types';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const ManageMembers = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [elderGroups, setElderGroups] = useState<{ [key: string]: Member[] }>({});
   const [unassignedMembers, setUnassignedMembers] = useState<Member[]>([]);
+  const [isPopulating, setIsPopulating] = useState(false);
 
   // Get all members
-  const { data: members, isLoading: loadingMembers } = useQuery({
+  const { data: members, isLoading: loadingMembers, refetch: refetchMembers } = useQuery({
     queryKey: ['members'],
     queryFn: getAllMembers,
   });
 
   // Get all elders
-  const { data: elders, isLoading: loadingElders } = useQuery({
+  const { data: elders, isLoading: loadingElders, refetch: refetchElders } = useQuery({
     queryKey: ['elders'],
     queryFn: getElderMembers,
   });
@@ -84,6 +87,38 @@ const ManageMembers = () => {
     }
   };
 
+  // Function to populate the database with sample data
+  const handlePopulateData = async () => {
+    setIsPopulating(true);
+    try {
+      const result = await populateWithSampleData();
+      if (result.success) {
+        toast({
+          title: "Data populated",
+          description: result.message,
+          variant: "default"
+        });
+        // Refetch data to update the UI
+        refetchMembers();
+        refetchElders();
+      } else {
+        toast({
+          title: "Population failed",
+          description: result.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Population failed",
+        description: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsPopulating(false);
+    }
+  };
+
   // Organize members by assigned elder
   useEffect(() => {
     if (!members || !elders) return;
@@ -129,7 +164,24 @@ const ManageMembers = () => {
   return (
     <CustomLayout>
       <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-6">Manage Members</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Manage Members</h1>
+          <Button 
+            onClick={handlePopulateData} 
+            disabled={isPopulating}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {isPopulating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Populating...
+              </>
+            ) : (
+              'Populate with Sample Data'
+            )}
+          </Button>
+        </div>
+        
         <p className="text-gray-600 mb-8">
           Drag and drop members between elders to reassign them. Members without assigned elders are listed under "Unassigned".
         </p>
