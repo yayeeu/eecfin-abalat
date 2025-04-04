@@ -38,7 +38,7 @@ const ManageMembers = () => {
       toast({
         title: "Member assigned",
         description: "The member has been successfully assigned to the elder.",
-        variant: "success"
+        variant: "default"
       });
       // Invalidate queries to refetch data
       queryClient.invalidateQueries({ queryKey: ['members'] });
@@ -61,7 +61,7 @@ const ManageMembers = () => {
       toast({
         title: "Member unassigned",
         description: "The member has been successfully removed from the elder.",
-        variant: "success"
+        variant: "default"
       });
       // Invalidate queries to refetch data
       queryClient.invalidateQueries({ queryKey: ['members'] });
