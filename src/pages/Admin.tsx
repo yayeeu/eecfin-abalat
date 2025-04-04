@@ -18,6 +18,12 @@ const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
   const { userRole, signOut, signUp } = useAuth();
 
   const handleMenuClick = (id: string) => {
+    // Special case for the 'manage_members' item which has a direct URL
+    if (id === 'manage_members') {
+      navigate('/manage-members');
+      return;
+    }
+    
     // Check if user has access to this section
     if (userRole && (userRole === 'admin' || sectionAccess[id]?.includes(userRole))) {
       setActiveSection(id);
@@ -38,6 +44,7 @@ const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
     settings: ['admin'],
     auth: ['admin', 'member', 'elder', 'it', 'volunteer'],
     register: ['admin'], // Only admin can access member registration
+    manage_members: ['admin', 'elder'],
   };
 
   // If member role tries to access admin, redirect to home

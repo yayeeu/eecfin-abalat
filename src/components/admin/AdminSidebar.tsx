@@ -30,6 +30,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     ministries: ['admin'],
     members: ['admin', 'elder'],
     elders: ['admin', 'elder'],
+    manage_members: ['admin', 'elder'],
     settings: ['admin'],
     auth: ['admin', 'member', 'elder', 'it', 'volunteer'],
     register: ['admin'], // Only admin can access member registration
@@ -42,6 +43,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'ministries', label: 'Ministries', icon: Users, roles: ['admin'] },
     { id: 'members', label: 'All Members', icon: User, roles: ['admin', 'elder'] },
     { id: 'elders', label: 'Elders', icon: UserCheck, roles: ['admin', 'elder'] },
+    { id: 'manage_members', label: 'Manage Members', icon: Users, url: '/manage-members', roles: ['admin', 'elder'] },
     { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
     { id: 'register', label: 'Add Member', icon: Lock, roles: ['admin'] }, // Only for admin
   ].filter(item => {
@@ -49,6 +51,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     if (userRole === 'admin') return true;
     return item.roles.includes(userRole as UserRole);
   });
+
+  const navigate = useNavigate();
+
+  // Handle menu item click
+  const onMenuItemClick = (item: any) => {
+    if (item.url) {
+      navigate(item.url);
+    } else {
+      handleMenuClick(item.id);
+    }
+  };
 
   return (
     <Sidebar>
@@ -69,7 +82,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton 
                     isActive={activeSectionState === item.id}
-                    onClick={() => handleMenuClick(item.id)}
+                    onClick={() => onMenuItemClick(item)}
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.label}</span>
