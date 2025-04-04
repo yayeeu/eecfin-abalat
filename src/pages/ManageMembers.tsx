@@ -1,24 +1,33 @@
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ElderBucket from '@/components/members/ElderBucket';
-import CustomLayout from '@/components/CustomLayout';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAllMembers, getElderMembers, assignElderToMember, removeElderAssignment } from '@/lib/memberService';
-import { populateWithSampleData } from '@/lib/services/elderService';
 import { Member } from '@/types/database.types';
 import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+
+// Import Sidebar Provider and other necessary components 
+import { SidebarProvider } from "@/components/ui/sidebar";
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import AdminHeader from '@/components/admin/AdminHeader';
 
 const ManageMembers = () => {
   const { toast } = useToast();
+  const { userRole, signOut } = useAuth();
   const queryClient = useQueryClient();
   const [elderGroups, setElderGroups] = useState<{ [key: string]: Member[] }>({});
   const [unassignedMembers, setUnassignedMembers] = useState<Member[]>([]);
-  const [isPopulating, setIsPopulating] = useState(false);
+  const [activeSection, setActiveSection] = useState('manage_members');
+
+  // Handle menu click for the sidebar
+  const handleMenuClick = (id: string) => {
+    setActiveSection(id);
+  };
 
   // Get all members
   const { data: members, isLoading: loadingMembers, refetch: refetchMembers } = useQuery({
@@ -87,38 +96,6 @@ const ManageMembers = () => {
     }
   };
 
-  // Function to populate the database with sample data
-  const handlePopulateData = async () => {
-    setIsPopulating(true);
-    try {
-      const result = await populateWithSampleData();
-      if (result.success) {
-        toast({
-          title: "Data populated",
-          description: result.message,
-          variant: "default"
-        });
-        // Refetch data to update the UI
-        refetchMembers();
-        refetchElders();
-      } else {
-        toast({
-          title: "Population failed",
-          description: result.message,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Population failed",
-        description: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive"
-      });
-    } finally {
-      setIsPopulating(false);
-    }
-  };
-
   // Organize members by assigned elder
   useEffect(() => {
     if (!members || !elders) return;
@@ -150,36 +127,20 @@ const ManageMembers = () => {
     setUnassignedMembers(unassigned);
   }, [members, elders]);
 
-  if (loadingMembers || loadingElders) {
-    return (
-      <CustomLayout>
+  const renderContent = () => {
+    if (loadingMembers || loadingElders) {
+      return (
         <div className="flex items-center justify-center min-h-screen">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <span className="ml-2">Loading member data...</span>
         </div>
-      </CustomLayout>
-    );
-  }
+      );
+    }
 
-  return (
-    <CustomLayout>
+    return (
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Manage Members</h1>
-          <Button 
-            onClick={handlePopulateData} 
-            disabled={isPopulating}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {isPopulating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Populating...
-              </>
-            ) : (
-              'Populate with Sample Data'
-            )}
-          </Button>
         </div>
         
         <p className="text-gray-600 mb-8">
@@ -227,7 +188,42 @@ const ManageMembers = () => {
           </div>
         </DndProvider>
       </div>
-    </CustomLayout>
+    );
+  };
+
+  return (
+    <div className="min-h-screen w-full">
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          {/* Sidebar Component */}
+          <AdminSidebar 
+            userRole={userRole}
+            activeSectionState={activeSection}
+            handleMenuClick={handleMenuClick}
+            handleSignOut={signOut}
+          />
+
+          {/* Main content area with header and content */}
+          <div className="flex flex-col flex-1">
+            {/* Header Component */}
+            <AdminHeader />
+
+            {/* Content Component */}
+            <div className="flex-1 p-6">
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-eecfin-navy">
+                  Manage Church Members
+                </h1>
+                <p className="text-gray-500 mt-2">
+                  Assign members to elders using drag and drop functionality.
+                </p>
+              </div>
+              {renderContent()}
+            </div>
+          </div>
+        </div>
+      </SidebarProvider>
+    </div>
   );
 };
 
