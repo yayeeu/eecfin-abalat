@@ -2,22 +2,19 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserRole } from '@/types/auth.types';
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  allowedRoles?: UserRole[];
   redirectTo?: string;
   isPublicRoute?: boolean;
 }
 
 const RoleGuard: React.FC<RoleGuardProps> = ({
   children,
-  allowedRoles = [],
   redirectTo = '/',
   isPublicRoute = false,
 }) => {
-  const { user, loading, hasPermission, userRole } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
   
@@ -46,13 +43,7 @@ const RoleGuard: React.FC<RoleGuardProps> = ({
     return <Navigate to="/auth" replace />;
   }
 
-  // If user doesn't have the required role, redirect
-  if (allowedRoles.length > 0 && !hasPermission(allowedRoles)) {
-    console.log('User does not have required role:', allowedRoles, 'Current role:', userRole);
-    return <Navigate to={redirectTo} replace />;
-  }
-
-  // Otherwise, render the children
+  // If user is authenticated, allow access to all routes
   return <>{children}</>;
 };
 

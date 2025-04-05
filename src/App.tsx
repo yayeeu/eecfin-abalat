@@ -56,11 +56,11 @@ const App = () => (
               } 
             />
 
-            {/* Admin Route - now contains all protected routes */}
+            {/* Admin Route - now accessible to all authenticated users */}
             <Route 
               path="/admin/*" 
               element={
-                <RoleGuard allowedRoles={['admin', 'elder', 'it', 'volunteer']}>
+                <RoleGuard>
                   <Suspense fallback={<PageLoader />}>
                     <Admin />
                   </Suspense>

@@ -17,12 +17,9 @@ import {
   BookOpen,
   UserCircle
 } from "lucide-react";
-import RoleGuard from "@/components/auth/RoleGuard";
-import { useAuth } from "@/contexts/AuthContext";
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  const { userRole } = useAuth();
   
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
@@ -55,41 +52,37 @@ const AdminSidebar: React.FC = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <RoleGuard allowedRoles={["admin", "elder"]}>
-          <SidebarGroup>
-            <SidebarGroupLabel>Members</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>                
-                <SidebarMenuItem className={isActive("/admin/all-members") ? "active" : ""}>
-                  <SidebarMenuButton asChild>
-                    <Link to="/admin/all-members">
-                      <Users className="mr-2 h-4 w-4" />
-                      <span>All Members</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </RoleGuard>
+        <SidebarGroup>
+          <SidebarGroupLabel>Members</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>                
+              <SidebarMenuItem className={isActive("/admin/all-members") ? "active" : ""}>
+                <SidebarMenuButton asChild>
+                  <Link to="/admin/all-members">
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>All Members</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-        <RoleGuard allowedRoles={["admin"]}>
-          <SidebarGroup>
-            <SidebarGroupLabel>Content</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem className={isActive("/admin/manage-ministries") ? "active" : ""}>
-                  <SidebarMenuButton asChild>
-                    <Link to="/admin/manage-ministries">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      <span>Manage Ministries</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </RoleGuard>
+        <SidebarGroup>
+          <SidebarGroupLabel>Content</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem className={isActive("/admin/manage-ministries") ? "active" : ""}>
+                <SidebarMenuButton asChild>
+                  <Link to="/admin/manage-ministries">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    <span>Manage Ministries</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );

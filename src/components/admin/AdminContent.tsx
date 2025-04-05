@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Card } from "@/components/ui/card";
-import RoleGuard from '@/components/auth/RoleGuard';
 import Dashboard from '@/components/Dashboard';
 import MinistryManager from '@/components/MinistryManager';
 import AllMembersList from '@/components/AllMembersList';
@@ -44,20 +42,10 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
         </p>
       </div>
       
-      {activeSection === 'dashboard' && (
-        <RoleGuard allowedRoles={['admin', 'elder']}>
-          <Dashboard />
-        </RoleGuard>
-      )}
-      {activeSection === 'ministries' && (
-        <RoleGuard allowedRoles={['admin']}>
-          <MinistryManager />
-        </RoleGuard>
-      )}
+      {activeSection === 'dashboard' && <Dashboard />}
+      {activeSection === 'ministries' && <MinistryManager />}
       {activeSection === 'members' && (
-        <RoleGuard allowedRoles={['admin', 'elder']}>
-          <AllMembersList onMemberSelect={(id) => console.log(`Selected member: ${id}`)} />
-        </RoleGuard>
+        <AllMembersList onMemberSelect={(id) => console.log(`Selected member: ${id}`)} />
       )}
     </div>
   );
