@@ -7,22 +7,23 @@ import ElderBucket from "./members/ElderBucket";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AddMemberDialog from "./members/AddMemberDialog";
+import MemberCard from "./members/MemberCard";
 
-// Define simpler interfaces without complex type relationships
-interface Member {
+// Simplified interfaces to prevent deep type instantiation
+interface SimpleMember {
   id: string;
   name?: string;
   email?: string;
 }
 
-interface Elder {
+interface SimpleElder {
   id: string;
   name: string;
 }
 
 const MemberManager: React.FC = () => {
-  const [elders, setElders] = useState<Elder[]>([]);
-  const [members, setMembers] = useState<Member[]>([]);
+  const [elders, setElders] = useState<SimpleElder[]>([]);
+  const [members, setMembers] = useState<SimpleMember[]>([]);
   const [elderAssignments, setElderAssignments] = useState<Record<string, string[]>>({
     unassigned: [],
   });
@@ -37,7 +38,7 @@ const MemberManager: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch all members with elder role - using a more direct query
+      // Fetch all members with elder role using a specific query
       const eldersResult = await supabase
         .from("members")
         .select("id, name")

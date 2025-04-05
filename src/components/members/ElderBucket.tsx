@@ -3,6 +3,7 @@ import React from "react";
 import { useDrop } from "react-dnd";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
+import MemberCard from "./MemberCard";
 
 interface Member {
   id: string;
@@ -11,11 +12,10 @@ interface Member {
 }
 
 interface ElderBucketProps {
-  elderId: string | null;
+  elderId: string;
   elderName: string;
   members: Member[];
-  onMemberDrop?: (memberId: string, targetElderId: string) => void;
-  onMoveMember?: (memberId: string, elderId: string | null) => void;
+  onMemberDrop: (memberId: string, targetElderId: string) => void;
 }
 
 const ElderBucket: React.FC<ElderBucketProps> = ({
@@ -23,17 +23,11 @@ const ElderBucket: React.FC<ElderBucketProps> = ({
   elderName,
   members,
   onMemberDrop,
-  onMoveMember,
 }) => {
   const [{ isOver }, drop] = useDrop({
     accept: "MEMBER",
     drop: (item: { id: string }) => {
-      if (onMemberDrop && elderId !== null) {
-        onMemberDrop(item.id, elderId);
-      }
-      if (onMoveMember) {
-        onMoveMember(item.id, elderId);
-      }
+      onMemberDrop(item.id, elderId);
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
@@ -53,21 +47,11 @@ const ElderBucket: React.FC<ElderBucketProps> = ({
           <p className="text-gray-500 text-sm italic">No members assigned</p>
         ) : (
           members.map((member) => (
-            <Card key={member.id} className="cursor-move">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">
-                      {member.name || "Unnamed Member"}
-                    </p>
-                    <p className="text-sm text-gray-500">{member.email || ""}</p>
-                  </div>
-                  <Badge variant="outline" className="ml-2">
-                    {elderId === null || elderId === "unassigned" ? "Unassigned" : "Assigned"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
+            <MemberCard 
+              key={member.id}
+              member={member} 
+              currentElderId={elderId}
+            />
           ))
         )}
       </div>

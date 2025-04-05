@@ -1,14 +1,19 @@
 
 import React from 'react';
 import { useDrag } from 'react-dnd';
-import { Member } from '@/types/database.types';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '../ui/card';
 import { User, Mail, Phone, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+interface Member {
+  id: string;
+  name?: string;
+  email?: string;
+}
+
 interface MemberCardProps {
   member: Member;
-  currentElderId: string | null;
+  currentElderId: string;
 }
 
 const MemberCard: React.FC<MemberCardProps> = ({ member, currentElderId }) => {
@@ -35,24 +40,19 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, currentElderId }) => {
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="font-medium truncate">{member.name}</div>
+          <div className="font-medium truncate">{member.name || "Unnamed Member"}</div>
           
-          <div className="flex flex-col mt-1 text-sm text-gray-500">
-            {member.email && (
-              <div className="flex items-center gap-1 truncate">
-                <Mail className="h-3 w-3" />
-                <span className="truncate">{member.email}</span>
-              </div>
-            )}
-            
-            {member.phone && (
-              <div className="flex items-center gap-1 truncate">
-                <Phone className="h-3 w-3" />
-                <span className="truncate">{member.phone}</span>
-              </div>
-            )}
-          </div>
+          {member.email && (
+            <div className="flex items-center gap-1 truncate text-sm text-gray-500">
+              <Mail className="h-3 w-3" />
+              <span className="truncate">{member.email}</span>
+            </div>
+          )}
         </div>
+        
+        <Badge variant="outline" className="ml-2">
+          {currentElderId === "unassigned" ? "Unassigned" : "Assigned"}
+        </Badge>
       </CardContent>
     </Card>
   );
