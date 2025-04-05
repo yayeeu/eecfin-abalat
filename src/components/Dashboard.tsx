@@ -1,14 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAllMembers, getElderMembers } from '@/lib/memberService';
 import { getMinistries } from '@/lib/ministryService';
+import { useNavigate } from 'react-router-dom';
 import MemberMetrics from './dashboard/MemberMetrics';
 import MinistryStats from './dashboard/MinistryStats';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import MemberTypeStats from './dashboard/MemberTypeStats';
+import MemberTabs from './dashboard/MemberTabs';
+import ActivityStats from './dashboard/ActivityStats';
 import { Loader2 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ['members'],
     queryFn: getAllMembers
@@ -25,6 +32,11 @@ const Dashboard: React.FC = () => {
   });
 
   const isLoading = membersLoading || eldersLoading || ministriesLoading;
+
+  const handleMemberSelect = (memberId: string) => {
+    setSelectedMemberId(memberId);
+    navigate(`/admin/edit-member/${memberId}`);
+  };
 
   if (isLoading) {
     return (
@@ -60,6 +72,33 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Member Types</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MemberTypeStats />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Members</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MemberTabs onMemberSelect={handleMemberSelect} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Recent Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ActivityStats />
+        </CardContent>
+      </Card>
     </div>
   );
 };
