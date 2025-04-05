@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -87,7 +88,7 @@ const AddMember = () => {
       status: 'active',
       is_baptised: false,
       has_letter_from_prev_church: false,
-      num_children: '0',
+      num_children: '0', // This is a string in the form that gets transformed to number
     },
   });
 
@@ -125,7 +126,7 @@ const AddMember = () => {
         status: member.status || 'active',
         is_baptised: member.is_baptised || false,
         has_letter_from_prev_church: member.has_letter_from_prev_church || false,
-        num_children: member.num_children !== undefined ? member.num_children.toString() : '0',
+        num_children: member.num_children !== undefined ? member.num_children.toString() : '0', // Convert number to string for form
       });
     }
   }, [member, memberLoading, form]);
@@ -140,14 +141,19 @@ const AddMember = () => {
         throw new Error('Name is required');
       }
       
+      // Get the transformed num_children value (will be a number after zod transformation)
+      const formattedData = {
+        ...data,
+        name: data.name, // Ensure name is explicitly passed
+      };
+      
       if (memberId) {
         // Get role id by name for update
         const roleData = await getRoleByName(data.role || 'member');
         
         // Update existing member
         await updateMember(memberId, {
-          ...data,
-          name: data.name, // Ensure name is explicitly passed
+          ...formattedData,
           role_id: roleData?.id,
         });
         
@@ -161,8 +167,7 @@ const AddMember = () => {
         
         // Create new member
         await createMember({
-          ...data,
-          name: data.name, // Ensure name is explicitly passed
+          ...formattedData,
           role_id: roleData?.id,
         });
         
