@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/use-toast";
 export interface SimpleMember {
   id: string;
   name?: string;
-  email?: string;
 }
 
 export interface SimpleElder {
