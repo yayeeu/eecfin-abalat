@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { UserRole } from "@/types/auth.types";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -15,8 +14,6 @@ import RoleGuard from "@/components/auth/RoleGuard";
 // Lazy-loaded components for better initial loading performance
 const Admin = lazy(() => import("./pages/Admin"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Profile = lazy(() => import("./pages/Profile"));
-const ManageMembers = lazy(() => import("./pages/ManageMembers"));
 
 // Configure the query client with performance optimizations
 const queryClient = new QueryClient({
@@ -59,39 +56,13 @@ const App = () => (
               } 
             />
 
-            {/* Admin Route */}
+            {/* Admin Route - now contains all protected routes */}
             <Route 
               path="/admin/*" 
               element={
                 <RoleGuard allowedRoles={['admin', 'elder', 'it', 'volunteer']}>
                   <Suspense fallback={<PageLoader />}>
                     <Admin />
-                  </Suspense>
-                </RoleGuard>
-              } 
-            />
-
-            {/* Profile Route */}
-            <Route 
-              path="/profile" 
-              element={
-                <RoleGuard allowedRoles={['admin', 'member', 'elder', 'it', 'volunteer']}>
-                  <Layout>
-                    <Suspense fallback={<PageLoader />}>
-                      <Profile />
-                    </Suspense>
-                  </Layout>
-                </RoleGuard>
-              } 
-            />
-
-            {/* Manage Members Route */}
-            <Route 
-              path="/manage-members" 
-              element={
-                <RoleGuard allowedRoles={['admin', 'elder']}>
-                  <Suspense fallback={<PageLoader />}>
-                    <ManageMembers />
                   </Suspense>
                 </RoleGuard>
               } 

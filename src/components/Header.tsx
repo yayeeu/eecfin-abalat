@@ -85,7 +85,7 @@ const Header = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link to="/profile">Profile</Link>
+                      <Link to="/admin/profile">Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => signOut()}>
@@ -162,7 +162,7 @@ const Header = () => {
               {user ? (
                 <>
                   <Link 
-                    to="/profile" 
+                    to="/admin/profile" 
                     className="nav-link px-4 py-2 flex items-center"
                     onClick={() => setIsMenuOpen(false)}
                   >

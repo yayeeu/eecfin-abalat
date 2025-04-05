@@ -14,7 +14,8 @@ import {
 import { 
   Users, 
   LayoutDashboard, 
-  BookOpen
+  BookOpen,
+  UserCircle
 } from "lucide-react";
 import RoleGuard from "@/components/auth/RoleGuard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +40,14 @@ const AdminSidebar: React.FC = () => {
                   <Link to="/admin">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem className={isActive("/admin/profile") ? "active" : ""}>
+                <SidebarMenuButton asChild>
+                  <Link to="/admin/profile">
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -45,7 +45,7 @@ const CustomHeader = () => {
                 Dashboard
               </Link>
               <Link 
-                to="/profile" 
+                to="/admin/profile" 
                 className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
                 Profile
@@ -70,7 +70,7 @@ const CustomHeader = () => {
               Dashboard
             </Link>
             <Link
-              to="/profile"
+              to="/admin/profile"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
               onClick={toggleMenu}
             >
