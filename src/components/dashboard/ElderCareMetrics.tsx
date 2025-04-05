@@ -23,10 +23,14 @@ const ElderCareMetrics: React.FC<{
   members: Member[]; 
   contactLogs: ContactLog[];
   elderId?: string;
+  displayAllActivities?: boolean;
+  displaySummary?: boolean;
 }> = ({ 
   members,
   contactLogs,
-  elderId
+  elderId,
+  displayAllActivities = false,
+  displaySummary = true
 }) => {
   const { data: memberTypes = [], isLoading } = useQuery({
     queryKey: ['memberTypesForElder', elderId],
@@ -147,6 +151,101 @@ const ElderCareMetrics: React.FC<{
   const allLogsByMemberType = getLogsByMemberType(allContactLogs);
   const allLogsByContactType = getLogsByContactType(allContactLogs);
   
+  // Render the appropriate content based on what we want to display
+  
+  // Only display the All Activities section
+  if (displayAllActivities && !displaySummary) {
+    return (
+      <div className="mt-2">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="p-4 border-b border-gray-200 bg-purple-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <BarChart className="h-5 w-5 text-purple-700 mr-2" />
+                <h4 className="text-md font-semibold text-purple-800">System-wide Contact Activity</h4>
+              </div>
+              <div className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full">
+                {allContactLogs.length} total logs
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-center mb-3">
+                  <PieChart className="h-5 w-5 text-indigo-600 mr-2" />
+                  <h5 className="text-sm font-semibold text-gray-700">By Member Type</h5>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {allLogsLoading ? (
+                    <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
+                  ) : allLogsByMemberType.length === 0 ? (
+                    <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
+                  ) : (
+                    allLogsByMemberType.map((item, index) => (
+                      item.logCount > 0 && (
+                        <div 
+                          key={`all-${item.id}`} 
+                          className={`rounded-lg p-3 ${typeColors[index % typeColors.length]} flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
+                        >
+                          <div className="text-xl font-bold">{item.logCount}</div>
+                          <div className="text-xs font-medium mt-1">{item.name || 'Unnamed'}</div>
+                        </div>
+                      )
+                    ))
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center mb-3">
+                  <MessageSquare className="h-5 w-5 text-rose-600 mr-2" />
+                  <h5 className="text-sm font-semibold text-gray-700">By Contact Type</h5>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {allLogsLoading ? (
+                    <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
+                  ) : allLogsByContactType.length === 0 ? (
+                    <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
+                  ) : (
+                    allLogsByContactType.map((item, index) => {
+                      const IconComponent = contactTypeIcons[item.type] || MessageSquare;
+                      const colorClasses = [
+                        'bg-blue-50 text-blue-700 border-blue-200',
+                        'bg-green-50 text-green-700 border-green-200',
+                        'bg-amber-50 text-amber-700 border-amber-200',
+                        'bg-rose-50 text-rose-700 border-rose-200',
+                      ];
+                      return (
+                        <div 
+                          key={`all-${item.type}`} 
+                          className={`rounded-lg p-3 ${colorClasses[index % colorClasses.length]} border flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
+                        >
+                          <IconComponent className="h-5 w-5 mb-2" />
+                          <div className="text-xl font-bold">{item.count}</div>
+                          <div className="text-xs font-medium mt-1">{item.type}</div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <div className="text-xs text-gray-500 flex items-center">
+                <Clock className="h-3 w-3 mr-1" />
+                <span>Last updated: {format(new Date(), 'MMM d, yyyy h:mm a')}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Display the summary section (and possibly the all activities section too)
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
@@ -275,97 +374,6 @@ const ElderCareMetrics: React.FC<{
                     })
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="mt-8">
-        <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-          <Activity className="mr-2 h-5 w-5 text-purple-600" />
-          All Activities
-        </h3>
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div className="p-4 border-b border-gray-200 bg-purple-50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <BarChart className="h-5 w-5 text-purple-700 mr-2" />
-                <h4 className="text-md font-semibold text-purple-800">System-wide Contact Activity</h4>
-              </div>
-              <div className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full">
-                {allContactLogs.length} total logs
-              </div>
-            </div>
-          </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center mb-3">
-                  <PieChart className="h-5 w-5 text-indigo-600 mr-2" />
-                  <h5 className="text-sm font-semibold text-gray-700">By Member Type</h5>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {allLogsLoading ? (
-                    <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
-                  ) : allLogsByMemberType.length === 0 ? (
-                    <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
-                  ) : (
-                    allLogsByMemberType.map((item, index) => (
-                      item.logCount > 0 && (
-                        <div 
-                          key={`all-${item.id}`} 
-                          className={`rounded-lg p-3 ${typeColors[index % typeColors.length]} flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
-                        >
-                          <div className="text-xl font-bold">{item.logCount}</div>
-                          <div className="text-xs font-medium mt-1">{item.name || 'Unnamed'}</div>
-                        </div>
-                      )
-                    ))
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center mb-3">
-                  <MessageSquare className="h-5 w-5 text-rose-600 mr-2" />
-                  <h5 className="text-sm font-semibold text-gray-700">By Contact Type</h5>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {allLogsLoading ? (
-                    <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
-                  ) : allLogsByContactType.length === 0 ? (
-                    <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
-                  ) : (
-                    allLogsByContactType.map((item, index) => {
-                      const IconComponent = contactTypeIcons[item.type] || MessageSquare;
-                      const colorClasses = [
-                        'bg-blue-50 text-blue-700 border-blue-200',
-                        'bg-green-50 text-green-700 border-green-200',
-                        'bg-amber-50 text-amber-700 border-amber-200',
-                        'bg-rose-50 text-rose-700 border-rose-200',
-                      ];
-                      return (
-                        <div 
-                          key={`all-${item.type}`} 
-                          className={`rounded-lg p-3 ${colorClasses[index % colorClasses.length]} border flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
-                        >
-                          <IconComponent className="h-5 w-5 mb-2" />
-                          <div className="text-xl font-bold">{item.count}</div>
-                          <div className="text-xs font-medium mt-1">{item.type}</div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <div className="text-xs text-gray-500 flex items-center">
-                <Clock className="h-3 w-3 mr-1" />
-                <span>Last updated: {format(new Date(), 'MMM d, yyyy h:mm a')}</span>
               </div>
             </div>
           </div>

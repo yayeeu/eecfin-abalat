@@ -51,6 +51,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Top section with two cards side by side */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-1">
           <CardHeader className="pb-2">
@@ -70,10 +71,27 @@ const Dashboard: React.FC = () => {
               members={myMembers || []} 
               contactLogs={contactLogs || []} 
               elderId={currentUser?.id} 
+              displayAllActivities={false}
             />
           </CardContent>
         </Card>
       </div>
+
+      {/* Full width "All Activities" section */}
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <CardTitle>All Activities</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ElderCareMetrics 
+            members={members || []} 
+            contactLogs={contactLogs || []} 
+            elderId={currentUser?.id}
+            displayAllActivities={true}
+            displaySummary={false}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
