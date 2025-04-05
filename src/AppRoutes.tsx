@@ -5,6 +5,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import RoleGuard from "@/components/auth/RoleGuard";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
@@ -17,6 +18,17 @@ const Profile = lazy(() => import("./pages/Profile"));
 const AddMember = lazy(() => import("./pages/AddMember"));
 const FollowUps = lazy(() => import("./pages/FollowUps"));
 
+// Configure the query client with performance optimizations
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 60 * 1000, // 1 minute
+      retry: 1,
+    },
+  },
+});
+
 // Loading fallback
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -26,83 +38,85 @@ const PageLoader = () => (
 
 const AppRoutes = () => {
   return (
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            
-            {/* Auth Route */}
-            <Route 
-              path="/auth" 
-              element={
-                <RoleGuard isPublicRoute={true}>
-                  <Suspense fallback={<PageLoader />}>
-                    <Auth />
-                  </Suspense>
-                </RoleGuard>
-              } 
-            />
-            
-            {/* Protected Routes */}
-            <Route element={<RoleGuard><Layout /></RoleGuard>}>
-              {/* Admin Routes */}
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
+              
+              {/* Auth Route */}
               <Route 
-                path="/admin/*" 
+                path="/auth" 
                 element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Admin />
-                  </Suspense>
+                  <RoleGuard isPublicRoute={true}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Auth />
+                    </Suspense>
+                  </RoleGuard>
                 } 
               />
               
-              <Route 
-                path="/admin/profile" 
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Profile />
-                  </Suspense>
-                } 
-              />
+              {/* Protected Routes */}
+              <Route element={<RoleGuard><Layout /></RoleGuard>}>
+                {/* Admin Routes */}
+                <Route 
+                  path="/admin/*" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Admin />
+                    </Suspense>
+                  } 
+                />
+                
+                <Route 
+                  path="/profile" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Profile />
+                    </Suspense>
+                  } 
+                />
+                
+                <Route 
+                  path="/admin/add-member" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <AddMember />
+                    </Suspense>
+                  } 
+                />
+                
+                <Route 
+                  path="/admin/edit-member/:memberId" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <AddMember />
+                    </Suspense>
+                  } 
+                />
+                
+                {/* Follow Ups Route */}
+                <Route 
+                  path="/follow-ups" 
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <FollowUps />
+                    </Suspense>
+                  } 
+                />
+              </Route>
               
-              <Route 
-                path="/admin/add-member" 
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <AddMember />
-                  </Suspense>
-                } 
-              />
-              
-              <Route 
-                path="/admin/edit-member/:memberId" 
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <AddMember />
-                  </Suspense>
-                } 
-              />
-              
-              {/* Follow Ups Route */}
-              <Route 
-                path="/follow-ups" 
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <FollowUps />
-                  </Suspense>
-                } 
-              />
-            </Route>
-            
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 

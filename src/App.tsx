@@ -10,10 +10,12 @@ import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import RoleGuard from "@/components/auth/RoleGuard";
+import React from "react";
 
 // Lazy-loaded components for better initial loading performance
 const Admin = lazy(() => import("./pages/Admin"));
 const Auth = lazy(() => import("./pages/Auth"));
+const ProtectedRoutes = lazy(() => import("./components/ProtectedRoutes"));
 
 // Configure the query client with performance optimizations
 const queryClient = new QueryClient({
@@ -75,7 +77,7 @@ const App = () => (
                 <RoleGuard>
                   <Layout>
                     <Suspense fallback={<PageLoader />}>
-                      <React.lazy(() => import('./components/ProtectedRoutes'))} />
+                      <ProtectedRoutes />
                     </Suspense>
                   </Layout>
                 </RoleGuard>
