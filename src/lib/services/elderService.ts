@@ -1,3 +1,4 @@
+
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import { Member } from '@/types/database.types';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,25 +7,51 @@ import { mockMembers, mockElderAssignments } from '@/lib/mockData/membersMockDat
 // Get elders from database
 export const getElderMembers = async (): Promise<Member[]> => {
   try {
+    console.log('Getting elder members, Supabase configured:', isSupabaseConfigured());
+    
     if (!isSupabaseConfigured()) {
       console.log('Using mock elder data');
-      return mockMembers.filter(member => member.role === 'elder');
+      const mockElders = mockMembers.filter(member => member.role === 'elder');
+      console.log('Mock elders:', mockElders);
+      return mockElders;
     }
 
+    // First get the role ID for elder
+    const { data: roleData, error: roleError } = await supabase!
+      .from('roles')
+      .select('id')
+      .eq('name', 'elder')
+      .single();
+    
+    if (roleError) {
+      console.error('Error fetching elder role:', roleError);
+      throw roleError;
+    }
+
+    console.log('Elder role ID:', roleData.id);
+    
+    // Use the role ID to fetch members with elder role
     const { data, error } = await supabase!
       .from('members')
       .select('*')
-      .eq('role', 'elder');
+      .eq('role_id', roleData.id)
+      .eq('status', 'active');
 
     if (error) {
       console.error('Error fetching elders:', error);
       throw error;
     }
 
+    console.log('Fetched elders count:', data?.length);
+    console.log('Fetched elders:', data);
+    
     return data || [];
   } catch (error) {
     console.error('Error in getElderMembers:', error);
-    return mockMembers.filter(member => member.role === 'elder');
+    // Return mock data as fallback
+    const mockElders = mockMembers.filter(member => member.role === 'elder');
+    console.log('Returning mock elders due to error:', mockElders);
+    return mockElders;
   }
 };
 
@@ -38,10 +65,24 @@ export const getEldersForDropdown = async (): Promise<{ id: string; name: string
         .map(elder => ({ id: elder.id, name: elder.name || 'Unknown' }));
     }
 
+    // First get the role ID for elder
+    const { data: roleData, error: roleError } = await supabase!
+      .from('roles')
+      .select('id')
+      .eq('name', 'elder')
+      .single();
+    
+    if (roleError) {
+      console.error('Error fetching elder role:', roleError);
+      throw roleError;
+    }
+    
+    // Use the role ID to fetch members with elder role
     const { data, error } = await supabase!
       .from('members')
       .select('id, name')
-      .eq('role', 'elder');
+      .eq('role_id', roleData.id)
+      .eq('status', 'active');
 
     if (error) {
       console.error('Error fetching elders for dropdown:', error);
@@ -57,7 +98,7 @@ export const getEldersForDropdown = async (): Promise<{ id: string; name: string
   }
 };
 
-// Function to populate with sample data
+// Function to populate with sample data (kept for reference)
 export const populateWithSampleData = async () => {
   if (!isSupabaseConfigured()) {
     console.error('Supabase is not configured');

@@ -2,11 +2,19 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-const MemberLoadingState: React.FC = () => {
+interface MemberLoadingStateProps {
+  message?: string;
+}
+
+const MemberLoadingState: React.FC<MemberLoadingStateProps> = ({ 
+  message = 'Loading member data...'
+}) => {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <span className="ml-2">Loading member data...</span>
+    <div className="flex flex-col items-center justify-center p-12 space-y-4">
+      <div className="flex items-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+        <span className="text-lg font-medium">{message}</span>
+      </div>
     </div>
   );
 };

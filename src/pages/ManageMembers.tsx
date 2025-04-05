@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -21,16 +22,36 @@ const ManageMembers = () => {
   const [unassignedMembers, setUnassignedMembers] = useState<Member[]>([]);
 
   // Get all members
-  const { data: members, isLoading: loadingMembers, refetch: refetchMembers } = useQuery({
+  const { data: members, isLoading: loadingMembers, refetch: refetchMembers, error: membersError } = useQuery({
     queryKey: ['members'],
     queryFn: getAllMembers,
   });
 
   // Get all elders
-  const { data: elders, isLoading: loadingElders, refetch: refetchElders } = useQuery({
+  const { data: elders, isLoading: loadingElders, refetch: refetchElders, error: eldersError } = useQuery({
     queryKey: ['elders'],
     queryFn: getElderMembers,
   });
+
+  // Log errors to help debug
+  useEffect(() => {
+    if (membersError) {
+      console.error("Error fetching members:", membersError);
+    }
+    if (eldersError) {
+      console.error("Error fetching elders:", eldersError);
+    }
+  }, [membersError, eldersError]);
+
+  // Log data when loaded to help debug
+  useEffect(() => {
+    if (elders) {
+      console.log("Elders loaded:", elders);
+    }
+    if (members) {
+      console.log("Members loaded:", members);
+    }
+  }, [elders, members]);
 
   // Mutation for assigning a member to an elder
   const assignMutation = useMutation({
@@ -89,15 +110,17 @@ const ManageMembers = () => {
 
   // Organize members by assigned elder
   useEffect(() => {
-    if (!members || !elders) return;
-
+    if (!members) return;
+    
     const groups: { [key: string]: Member[] } = {};
     const unassigned: Member[] = [];
 
-    // Initialize groups for each elder
-    elders.forEach(elder => {
-      groups[elder.id] = [];
-    });
+    // Initialize groups for each elder if we have elders
+    if (elders && elders.length > 0) {
+      elders.forEach(elder => {
+        groups[elder.id] = [];
+      });
+    }
 
     // Group members by their assigned elder
     members.forEach(member => {
@@ -116,6 +139,9 @@ const ManageMembers = () => {
 
     setElderGroups(groups);
     setUnassignedMembers(unassigned);
+    
+    console.log("Elder groups updated:", groups);
+    console.log("Unassigned members updated:", unassigned);
   }, [members, elders]);
 
   return (
@@ -138,7 +164,12 @@ const ManageMembers = () => {
               />
               
               {loadingMembers || loadingElders ? (
-                <MemberLoadingState />
+                <MemberLoadingState message={loadingElders ? "Loading elders data..." : "Loading members data..."} />
+              ) : eldersError ? (
+                <div className="bg-red-50 border border-red-200 p-6 rounded-lg">
+                  <h3 className="text-lg font-medium text-red-800">Error loading elders</h3>
+                  <p className="text-red-700 mt-1">{String(eldersError)}</p>
+                </div>
               ) : (
                 <MemberContentSection 
                   elders={elders || []}

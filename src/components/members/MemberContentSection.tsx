@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import ElderBucket from './ElderBucket';
 import { Member } from '@/types/database.types';
+import { AlertCircle } from 'lucide-react';
 
 interface MemberContentSectionProps {
   elders: any[];
@@ -19,6 +20,28 @@ const MemberContentSection: React.FC<MemberContentSectionProps> = ({
   elderGroups,
   onMoveMember 
 }) => {
+  useEffect(() => {
+    console.log('MemberContentSection rendered with elders:', elders);
+    console.log('Unassigned members:', unassignedMembers);
+    console.log('Elder groups:', elderGroups);
+  }, [elders, unassignedMembers, elderGroups]);
+
+  if (!elders || elders.length === 0) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-lg flex items-start">
+          <AlertCircle className="text-yellow-500 h-6 w-6 mr-4 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="text-lg font-medium text-yellow-800">No elders available</h3>
+            <p className="text-yellow-700 mt-1">
+              No elders found in the system. Please add members with the elder role to start assigning regular members to elders.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
