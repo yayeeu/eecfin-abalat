@@ -3,11 +3,19 @@ import React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ElderBucket from "./ElderBucket";
-import { SimpleElder, SimpleMember, ElderAssignmentsMap } from "@/hooks/useElderAssignments";
+import { Member } from "@/types/database.types";
+
+interface SimpleElder {
+  id: string;
+  name: string;
+}
+
+// Define the assignments map type
+type ElderAssignmentsMap = Record<string, string[]>;
 
 interface ElderBucketsGridProps {
   elders: SimpleElder[];
-  members: SimpleMember[];
+  members: Member[]; // Updated from SimpleMember[] to Member[]
   elderAssignments: ElderAssignmentsMap;
   onMemberDrop: (memberId: string, targetElderId: string) => void;
 }
@@ -33,7 +41,7 @@ const ElderBucketsGrid: React.FC<ElderBucketsGridProps> = ({
             elderId="unassigned"
             elderName="Unassigned Members"
             members={getMembersForElder("unassigned")}
-            onMemberDrop={onMemberDrop}
+            onMoveMember={onMemberDrop}
           />
         </div>
 
@@ -43,7 +51,7 @@ const ElderBucketsGrid: React.FC<ElderBucketsGridProps> = ({
               elderId={elder.id}
               elderName={elder.name || "Unknown Elder"}
               members={getMembersForElder(elder.id)}
-              onMemberDrop={onMemberDrop}
+              onMoveMember={onMemberDrop}
             />
           </div>
         ))}

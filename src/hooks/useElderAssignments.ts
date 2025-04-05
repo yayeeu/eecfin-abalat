@@ -2,24 +2,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Member } from "@/types/database.types";
 
-// Define simple interfaces to avoid deep type instantiation
-export interface SimpleMember {
-  id: string;
-  name?: string;
-}
-
+// Define simple interfaces for elders
 export interface SimpleElder {
   id: string;
   name: string;
 }
 
-// Use a simpler type definition to avoid excessive recursion
+// Use a simpler type definition for the assignments map
 export type ElderAssignmentsMap = Record<string, string[]>;
 
 export const useElderAssignments = () => {
   const [elders, setElders] = useState<SimpleElder[]>([]);
-  const [members, setMembers] = useState<SimpleMember[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [elderAssignments, setElderAssignments] = useState<ElderAssignmentsMap>({
     unassigned: [],
   });
@@ -31,15 +27,18 @@ export const useElderAssignments = () => {
       setLoading(true);
       
       // Fetch all members with elder role using a specific query
-      const { data: roleData } = await supabase
+      const { data: roleData, error: roleError } = await supabase
         .from("roles")
         .select("id")
         .eq("name", "elder")
         .single();
 
-      if (!roleData) {
+      if (roleError) {
+        console.error("Error fetching elder role:", roleError);
         throw new Error("Elder role not found");
       }
+
+      console.log("Elder role ID:", roleData.id);
 
       // Get all active elders
       const eldersResult = await supabase
@@ -48,30 +47,40 @@ export const useElderAssignments = () => {
         .eq("role_id", roleData.id)
         .eq("status", "active");
 
-      if (eldersResult.error) throw eldersResult.error;
+      if (eldersResult.error) {
+        console.error("Error fetching elders:", eldersResult.error);
+        throw eldersResult.error;
+      }
 
-      // Fetch all regular members (non-elders)
+      console.log("Fetched elders:", eldersResult.data);
+
+      // Fetch all members (without filtering by role to get everything)
       const membersResult = await supabase
         .from("members")
-        .select("id, name")
-        .neq("role_id", roleData.id)
+        .select("*")
         .eq("status", "active");
 
-      if (membersResult.error) throw membersResult.error;
+      if (membersResult.error) {
+        console.error("Error fetching members:", membersResult.error);
+        throw membersResult.error;
+      }
+
+      console.log("Fetched members:", membersResult.data?.length || 0, "members");
 
       // Fetch current elder assignments
       const assignmentsResult = await supabase
         .from("member_under_elder")
         .select("elder_id, member_id");
 
-      if (assignmentsResult.error) throw assignmentsResult.error;
+      if (assignmentsResult.error) {
+        console.error("Error fetching assignments:", assignmentsResult.error);
+        throw assignmentsResult.error;
+      }
 
       // Process the data
       const eldersData = eldersResult.data || [];
       setElders(eldersData);
       setMembers(membersResult.data || []);
-
-      console.log("Fetched elders:", eldersData);
 
       // Create initial assignments map
       const assignments: ElderAssignmentsMap = { unassigned: [] };
@@ -88,11 +97,19 @@ export const useElderAssignments = () => {
         }
       });
 
-      // Find unassigned members
+      // Find unassigned members - exclude elders from being assignable
+      const elderIds = eldersData.map(elder => elder.id);
       const assignedMemberIds = assignmentsResult.data?.map(a => a.member_id) || [];
-      const unassignedMembers = membersResult.data?.filter(
-        member => !assignedMemberIds.includes(member.id)
+      
+      // Regular members are those who are not elders
+      const regularMembers = membersResult.data?.filter(
+        member => !elderIds.includes(member.id)
       ) || [];
+      
+      // Unassigned regular members
+      const unassignedMembers = regularMembers.filter(
+        member => !assignedMemberIds.includes(member.id)
+      );
       
       assignments.unassigned = unassignedMembers.map(m => m.id);
 

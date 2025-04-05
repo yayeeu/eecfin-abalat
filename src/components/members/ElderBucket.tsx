@@ -21,7 +21,7 @@ const ElderBucket: React.FC<ElderBucketProps> = ({
 }) => {
   const handleDrop = (item: { id: string }) => {
     console.log(`Dropping member ${item.id} onto elder ${elderId || 'unassigned'}`);
-    onMoveMember(item.id, elderId);
+    onMoveMember(item.id, elderId || "unassigned");
   };
 
   const [{ isOver }, drop] = useDrop({
