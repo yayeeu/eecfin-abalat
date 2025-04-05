@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -196,12 +195,7 @@ const ManageMembers = () => {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           {/* Sidebar Component */}
-          <AdminSidebar 
-            userRole={userRole}
-            activeSectionState={activeSection}
-            handleMenuClick={handleMenuClick}
-            handleSignOut={signOut}
-          />
+          <AdminSidebar />
 
           {/* Main content area with header and content */}
           <div className="flex flex-col flex-1">

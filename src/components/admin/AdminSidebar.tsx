@@ -21,9 +21,11 @@ import {
   Calendar
 } from "lucide-react";
 import RoleGuard from "@/components/auth/RoleGuard";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
+  const { userRole } = useAuth();
   
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);

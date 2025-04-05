@@ -30,11 +30,6 @@ const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
   // Define which roles can access which sections based on requirements
   const sectionAccess: Record<string, UserRole[]> = {
     dashboard: ['admin', 'elder'],
@@ -57,12 +52,7 @@ const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           {/* Sidebar Component */}
-          <AdminSidebar 
-            userRole={userRole}
-            activeSectionState={activeSectionState}
-            handleMenuClick={handleMenuClick}
-            handleSignOut={handleSignOut}
-          />
+          <AdminSidebar />
 
           {/* Main content area with header and content */}
           <div className="flex flex-col flex-1">
