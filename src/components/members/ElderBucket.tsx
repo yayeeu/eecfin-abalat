@@ -11,10 +11,11 @@ interface Member {
 }
 
 interface ElderBucketProps {
-  elderId: string;
+  elderId: string | null;
   elderName: string;
   members: Member[];
-  onMemberDrop: (memberId: string, targetElderId: string) => void;
+  onMemberDrop?: (memberId: string, targetElderId: string) => void;
+  onMoveMember?: (memberId: string, elderId: string | null) => void;
 }
 
 const ElderBucket: React.FC<ElderBucketProps> = ({
@@ -22,11 +23,17 @@ const ElderBucket: React.FC<ElderBucketProps> = ({
   elderName,
   members,
   onMemberDrop,
+  onMoveMember,
 }) => {
   const [{ isOver }, drop] = useDrop({
     accept: "MEMBER",
     drop: (item: { id: string }) => {
-      onMemberDrop(item.id, elderId);
+      if (onMemberDrop && elderId !== null) {
+        onMemberDrop(item.id, elderId);
+      }
+      if (onMoveMember) {
+        onMoveMember(item.id, elderId);
+      }
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
@@ -56,7 +63,7 @@ const ElderBucket: React.FC<ElderBucketProps> = ({
                     <p className="text-sm text-gray-500">{member.email || ""}</p>
                   </div>
                   <Badge variant="outline" className="ml-2">
-                    {elderId === "unassigned" ? "Unassigned" : "Assigned"}
+                    {elderId === null || elderId === "unassigned" ? "Unassigned" : "Assigned"}
                   </Badge>
                 </div>
               </CardContent>
