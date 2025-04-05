@@ -17,6 +17,8 @@ const Admin: React.FC = () => {
       setActiveSection('dashboard');
     } else if (path === '/admin/all-members') {
       setActiveSection('members');
+    } else if (path === '/admin/manage-members') {
+      setActiveSection('manage-members');
     } else if (path === '/admin/manage-ministries') {
       setActiveSection('ministries');
     }
