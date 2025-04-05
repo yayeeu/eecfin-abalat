@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-import Layout from '@/components/Layout';
+import CustomLayout from '@/components/CustomLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -102,7 +102,7 @@ const Profile = () => {
   };
 
   return (
-    <Layout>
+    <CustomLayout>
       <div className="container py-16 px-4">
         <div className="max-w-xl mx-auto">
           <Card>
@@ -212,7 +212,7 @@ const Profile = () => {
           </Card>
         </div>
       </div>
-    </Layout>
+    </CustomLayout>
   );
 };
 
