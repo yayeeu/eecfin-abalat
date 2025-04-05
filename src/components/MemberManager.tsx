@@ -1,13 +1,11 @@
-
 import React, { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Button } from "./ui/button";
 import ElderBucket from "./members/ElderBucket";
 import { useToast } from "./ui/use-toast";
-import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { PlusCircle } from "lucide-react";
+import AddMemberDialog from "./members/AddMemberDialog";
 
 interface Member {
   id: string;
@@ -180,6 +178,75 @@ const MemberManager: React.FC = () => {
     return members.filter(member => memberIds.includes(member.id));
   };
 
+  const handleMemberAdded = () => {
+    // Refresh the data after a new member is added
+    fetchData();
+  };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // Fetch all elders
+      const { data: eldersData, error: eldersError } = await supabase
+        .from("elders")
+        .select("id, name");
+
+      if (eldersError) throw eldersError;
+
+      // Fetch all members
+      const { data: membersData, error: membersError } = await supabase
+        .from("members")
+        .select("id, name, email");
+
+      if (membersError) throw membersError;
+
+      // Fetch current elder assignments
+      const { data: assignmentsData, error: assignmentsError } = await supabase
+        .from("member_under_elder")
+        .select("elder_id, member_id");
+
+      if (assignmentsError) throw assignmentsError;
+
+      // Process the data
+      setElders(eldersData || []);
+      setMembers(membersData || []);
+
+      // Create initial assignments map
+      const assignments: Record<string, string[]> = { unassigned: [] };
+      
+      // Initialize assignments for each elder
+      eldersData?.forEach((elder) => {
+        assignments[elder.id] = [];
+      });
+
+      // Add members to their assigned elders
+      assignmentsData?.forEach((assignment) => {
+        if (assignments[assignment.elder_id]) {
+          assignments[assignment.elder_id].push(assignment.member_id);
+        }
+      });
+
+      // Find unassigned members
+      const assignedMemberIds = assignmentsData?.map(a => a.member_id) || [];
+      const unassignedMembers = membersData?.filter(
+        member => !assignedMemberIds.includes(member.id)
+      ) || [];
+      
+      assignments.unassigned = unassignedMembers.map(m => m.id);
+
+      setElderAssignments(assignments);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load elders and members data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="p-8">Loading elder and member data...</div>;
   }
@@ -188,12 +255,7 @@ const MemberManager: React.FC = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Manage Member Assignments</h2>
-        <Button asChild variant="default">
-          <Link to="/admin/add-member">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Member
-          </Link>
-        </Button>
+        <AddMemberDialog onMemberAdded={handleMemberAdded} />
       </div>
 
       <p className="mb-6 text-gray-600">

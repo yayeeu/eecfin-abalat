@@ -57,47 +57,6 @@ export type Database = {
           },
         ]
       }
-      elders: {
-        Row: {
-          created_at: string | null
-          email: string | null
-          id: string
-          image: string | null
-          ministry_id: string | null
-          name: string
-          phone: string | null
-          role: string
-        }
-        Insert: {
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          image?: string | null
-          ministry_id?: string | null
-          name: string
-          phone?: string | null
-          role: string
-        }
-        Update: {
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          image?: string | null
-          ministry_id?: string | null
-          name?: string
-          phone?: string | null
-          role?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "elders_ministry_id_fkey"
-            columns: ["ministry_id"]
-            isOneToOne: false
-            referencedRelation: "ministries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       member_ministry: {
         Row: {
           created_at: string | null
@@ -206,7 +165,7 @@ export type Database = {
           emergency_contact?: string | null
           gender?: string | null
           has_letter_from_prev_church?: boolean | null
-          id: string
+          id?: string
           image?: string | null
           is_baptised?: boolean | null
           latitude?: number | null
