@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createMember } from '@/lib/memberService';
+import { createMember, updateMember } from '@/lib/memberService';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
+import { Member } from '@/types/database.types';
 
 // Form validation schema
 const memberSchema = z.object({
@@ -34,9 +35,16 @@ type MemberFormValues = z.infer<typeof memberSchema>;
 interface AddMemberFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  initialData?: Partial<Member> | null;
+  isEditMode?: boolean;
 }
 
-const AddMemberForm: React.FC<AddMemberFormProps> = ({ onSuccess, onCancel }) => {
+const AddMemberForm: React.FC<AddMemberFormProps> = ({ 
+  onSuccess, 
+  onCancel,
+  initialData = null,
+  isEditMode = false
+}) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -44,12 +52,12 @@ const AddMemberForm: React.FC<AddMemberFormProps> = ({ onSuccess, onCancel }) =>
   const form = useForm<MemberFormValues>({
     resolver: zodResolver(memberSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      postal_code: ''
+      name: initialData?.name || '',
+      email: initialData?.email || '',
+      phone: initialData?.phone || '',
+      address: initialData?.address || '',
+      city: initialData?.city || '',
+      postal_code: initialData?.postal_code || ''
     }
   });
 
@@ -79,10 +87,44 @@ const AddMemberForm: React.FC<AddMemberFormProps> = ({ onSuccess, onCancel }) =>
     }
   });
 
+  // Mutation for updating an existing member
+  const updateMemberMutation = useMutation({
+    mutationFn: (data: MemberFormValues) => {
+      if (!initialData?.id) {
+        throw new Error('Member ID is required for updates');
+      }
+      return updateMember(initialData.id, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Member has been updated successfully',
+      });
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      if (initialData?.id) {
+        queryClient.invalidateQueries({ queryKey: ['member', initialData.id] });
+      }
+      if (onSuccess) onSuccess();
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to update member: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: 'destructive',
+      });
+    }
+  });
+
   // Form submission handler
   const onSubmit = (data: MemberFormValues) => {
-    createMemberMutation.mutate(data);
+    if (isEditMode && initialData?.id) {
+      updateMemberMutation.mutate(data);
+    } else {
+      createMemberMutation.mutate(data);
+    }
   };
+
+  const isPending = createMemberMutation.isPending || updateMemberMutation.isPending;
 
   return (
     <Form {...form}>
@@ -183,12 +225,12 @@ const AddMemberForm: React.FC<AddMemberFormProps> = ({ onSuccess, onCancel }) =>
           )}
           <Button 
             type="submit" 
-            disabled={createMemberMutation.isPending}
+            disabled={isPending}
           >
-            {createMemberMutation.isPending && (
+            {isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Create Member
+            {isEditMode ? 'Update Member' : 'Create Member'}
           </Button>
         </DialogFooter>
       </form>

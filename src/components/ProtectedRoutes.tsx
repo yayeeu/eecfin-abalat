@@ -18,6 +18,7 @@ const ProtectedRoutes = () => {
         <Route path="/admin/all-members" element={<Admin />} />
         <Route path="/admin/manage-ministries" element={<Admin />} />
         <Route path="/admin/add-member" element={<AddMember />} />
+        <Route path="/admin/edit-member/:memberId" element={<AddMember />} />
         <Route path="/admin/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

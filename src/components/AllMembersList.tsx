@@ -1,14 +1,18 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAllMembers } from '@/lib/memberService';
+import { getAllMembers, getMember } from '@/lib/memberService';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Users, MapPin } from 'lucide-react';
+import { Search, Users, MapPin, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MembersTable from '@/components/members/MembersTable';
 import MembersMap from '@/components/dashboard/MembersMap';
+import MemberDetailView from '@/components/members/MemberDetailView';
+import { useNavigate } from 'react-router-dom';
+import { Member } from '@/types/database.types';
+import AddMemberDialog from '@/components/members/AddMemberDialog';
 
 interface AllMembersListProps {
   onMemberSelect: (memberId: string) => void;
@@ -17,8 +21,11 @@ interface AllMembersListProps {
 
 const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('list');
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [showDetailView, setShowDetailView] = useState(false);
 
   // Query to fetch all members, including those without user accounts
   const { 
@@ -65,6 +72,32 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
     onMemberSelect(memberId);
   };
 
+  // Handle viewing member details
+  const handleViewDetails = async (member: Member) => {
+    setSelectedMember(member);
+    setShowDetailView(true);
+  };
+
+  // Handle editing a member
+  const handleEditMember = (memberId: string) => {
+    navigate(`/admin/edit-member/${memberId}`);
+  };
+
+  // Handle closing the detail view
+  const handleCloseDetailView = () => {
+    setShowDetailView(false);
+    setSelectedMember(null);
+  };
+
+  // Handle member added
+  const handleMemberAdded = () => {
+    refetch();
+    toast({
+      title: "Success",
+      description: "Member added successfully",
+    });
+  };
+
   if (isError) {
     return (
       <div className="text-center py-10">
@@ -88,23 +121,27 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
           />
         </div>
 
-        <Tabs
-          value={viewMode}
-          onValueChange={(v) => setViewMode(v)}
-          className="w-auto"
-        >
-          <TabsList className="grid w-[180px] grid-cols-2">
-            <TabsTrigger value="list" className="flex items-center">
-              <Users className="h-4 w-4 mr-1" />
-              List
-            </TabsTrigger>
-            
-            <TabsTrigger value="map" className="flex items-center">
-              <MapPin className="h-4 w-4 mr-1" />
-              Map
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex gap-2">
+          <AddMemberDialog onMemberAdded={handleMemberAdded} />
+
+          <Tabs
+            value={viewMode}
+            onValueChange={(v) => setViewMode(v)}
+            className="w-auto"
+          >
+            <TabsList className="grid w-[180px] grid-cols-2">
+              <TabsTrigger value="list" className="flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                List
+              </TabsTrigger>
+              
+              <TabsTrigger value="map" className="flex items-center">
+                <MapPin className="h-4 w-4 mr-1" />
+                Map
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       {isLoading ? (
@@ -121,6 +158,8 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
               <MembersTable 
                 members={filteredMembers} 
                 onMemberClick={handleMemberClick}
+                onViewDetails={handleViewDetails}
+                onEditMember={handleEditMember}
                 readOnly={readOnly}
               />
             </div>
@@ -132,6 +171,13 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
             Showing {filteredMembers.length} of {members.length} members
           </div>
         </div>
+      )}
+
+      {showDetailView && selectedMember && (
+        <MemberDetailView 
+          member={selectedMember} 
+          onClose={handleCloseDetailView} 
+        />
       )}
     </div>
   );
