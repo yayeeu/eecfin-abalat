@@ -1,76 +1,83 @@
 
 import React from 'react';
 import { Member } from '@/types/database.types';
+import { Loader2 } from 'lucide-react';
 import MembersTable from '@/components/members/MembersTable';
-import MembersMap from '@/components/dashboard/MembersMap';
-import { Button } from '@/components/ui/button';
+import MemberLoadingState from './MemberLoadingState';
+import MemberCard from './MemberCard';
 
 interface MembersListContentProps {
   isLoading: boolean;
+  isError: boolean;
   filteredMembers: Member[];
   viewMode: string;
   onMemberClick: (memberId: string) => void;
   onViewDetails: (member: Member) => void;
   onEditMember: (memberId: string) => void;
   readOnly?: boolean;
-  refetch: () => void;
-  isError: boolean;
   totalCount: number;
   activeTabLabel: string;
+  refetch?: () => void;
 }
 
 const MembersListContent: React.FC<MembersListContentProps> = ({
   isLoading,
+  isError,
   filteredMembers,
   viewMode,
   onMemberClick,
   onViewDetails,
   onEditMember,
   readOnly = false,
-  refetch,
-  isError,
   totalCount,
-  activeTabLabel
+  activeTabLabel,
+  refetch
 }) => {
-  if (isError) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-red-500">Error loading members data</p>
-        <Button onClick={refetch} className="mt-4">Try Again</Button>
-      </div>
-    );
+  if (isLoading) {
+    return <MemberLoadingState />;
   }
 
-  if (isLoading) {
+  if (isError) {
     return (
-      <div className="py-10 flex justify-center">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900" />
-          <p className="mt-3">Loading members...</p>
-        </div>
+      <div className="p-8 text-center">
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading members</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Something went wrong while fetching members. Please try again.
+        </p>
       </div>
     );
   }
 
   return (
     <div>
-      {viewMode === 'list' ? (
-        <div className="bg-white rounded-md border">
-          <MembersTable 
-            members={filteredMembers} 
-            onMemberClick={onMemberClick}
-            onViewDetails={onViewDetails}
-            onEditMember={onEditMember}
-            readOnly={readOnly}
-          />
-        </div>
-      ) : (
-        <MembersMap members={filteredMembers} />
-      )}
-      
-      <div className="mt-2 text-sm text-gray-500">
-        Showing {filteredMembers.length} {activeTabLabel !== 'all' ? activeTabLabel : 'of ' + totalCount + ' members'}
+      <div className="my-4 text-sm text-gray-500">
+        Showing {filteredMembers.length} of {totalCount} {activeTabLabel}
       </div>
+
+      {viewMode === 'list' ? (
+        <MembersTable
+          members={filteredMembers}
+          onMemberClick={onMemberClick}
+          onViewDetails={onViewDetails}
+          onEditMember={onEditMember}
+          readOnly={readOnly}
+          refetch={refetch}
+        />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredMembers.map((member) => (
+            <MemberCard
+              key={member.id}
+              member={member}
+              onMemberClick={onMemberClick}
+              onViewDetails={onViewDetails}
+              onEditMember={onEditMember}
+              readOnly={readOnly}
+              refetch={refetch}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -10,8 +10,9 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, User, Info, Edit } from 'lucide-react';
+import { Mail, Phone, MapPin, User, Info, Edit, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AddFollowUpDialog from './AddFollowUpDialog';
 
 interface MembersTableProps {
   members: Member[];
@@ -19,6 +20,7 @@ interface MembersTableProps {
   onViewDetails: (member: Member) => void;
   onEditMember: (memberId: string) => void;
   readOnly?: boolean;
+  refetch?: () => void;
 }
 
 const MembersTable: React.FC<MembersTableProps> = ({ 
@@ -26,7 +28,8 @@ const MembersTable: React.FC<MembersTableProps> = ({
   onMemberClick,
   onViewDetails,
   onEditMember,
-  readOnly = false
+  readOnly = false,
+  refetch
 }) => {
   // Log the members data to see what we're working with
   console.log(`MembersTable rendering ${members.length} members:`, members);
@@ -120,15 +123,21 @@ const MembersTable: React.FC<MembersTableProps> = ({
                   Details
                 </Button>
                 {!readOnly && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => onEditMember(member.id)} 
-                    className="flex items-center"
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
+                  <>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onEditMember(member.id)} 
+                      className="flex items-center"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <AddFollowUpDialog 
+                      member={member} 
+                      onSuccess={refetch}
+                    />
+                  </>
                 )}
               </div>
             </TableCell>
