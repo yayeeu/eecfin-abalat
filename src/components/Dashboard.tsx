@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAllMembers, getElderMembers } from '@/lib/memberService';
-import { getMinistries } from '@/lib/ministryService';
+import { getAllMembers, getElderMembers, getMembersByElderId } from '@/lib/memberService';
+import { getContactLogsByElderId } from '@/lib/contactLogService';
+import { getCurrentUser } from '@/services/authService';
 import MemberMetrics from './dashboard/MemberMetrics';
-import MinistryStats from './dashboard/MinistryStats';
+import ElderCareMetrics from './dashboard/ElderCareMetrics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
@@ -19,12 +20,24 @@ const Dashboard: React.FC = () => {
     queryFn: getElderMembers
   });
 
-  const { data: ministries, isLoading: ministriesLoading } = useQuery({
-    queryKey: ['ministries'],
-    queryFn: () => getMinistries(true)
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: getCurrentUser
   });
 
-  const isLoading = membersLoading || eldersLoading || ministriesLoading;
+  const { data: myMembers, isLoading: myMembersLoading } = useQuery({
+    queryKey: ['myMembers', currentUser?.id],
+    queryFn: () => currentUser?.id ? getMembersByElderId(currentUser.id) : Promise.resolve([]),
+    enabled: !!currentUser?.id
+  });
+
+  const { data: contactLogs, isLoading: contactLogsLoading } = useQuery({
+    queryKey: ['contactLogs', currentUser?.id],
+    queryFn: () => currentUser?.id ? getContactLogsByElderId(currentUser.id) : Promise.resolve([]),
+    enabled: !!currentUser?.id
+  });
+
+  const isLoading = membersLoading || eldersLoading || myMembersLoading || contactLogsLoading;
 
   if (isLoading) {
     return (
@@ -49,13 +62,13 @@ const Dashboard: React.FC = () => {
         
         <Card className="md:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle>Ministry Statistics</CardTitle>
+            <CardTitle>Under my Care</CardTitle>
           </CardHeader>
           <CardContent>
-            <MinistryStats 
-              ministries={ministries || []} 
-              members={members || []} 
-              elders={elders || []} 
+            <ElderCareMetrics 
+              members={myMembers || []} 
+              contactLogs={contactLogs || []} 
+              elderId={currentUser?.id} 
             />
           </CardContent>
         </Card>

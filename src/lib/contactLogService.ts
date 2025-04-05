@@ -1,4 +1,3 @@
-
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import { ContactLog } from '@/types/database.types';
 import { v4 as uuidv4 } from 'uuid';
@@ -195,4 +194,29 @@ export const deleteContactLog = async (id: string) => {
   }
   
   return true;
+};
+
+export const getContactLogsByElderId = async (elderId: string) => {
+  // If Supabase is not configured, return mock data
+  if (!isSupabaseConfigured()) {
+    console.log('Using mock data for contact logs by elder ID');
+    return Promise.resolve(mockContactLogs.filter(log => log.elder_id === elderId));
+  }
+  
+  const { data, error } = await supabase!
+    .from('contact_log')
+    .select(`
+      *,
+      elder:members!contact_log_elder_id_fkey(id, name),
+      member:members!contact_log_member_id_fkey(id, name)
+    `)
+    .eq('elder_id', elderId)
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching contact logs by elder ID:', error);
+    throw error;
+  }
+  
+  return data as ContactLog[];
 };
