@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -28,72 +29,74 @@ const MemberManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // Fetch all elders
-        const { data: eldersData, error: eldersError } = await supabase
-          .from("elders")
-          .select("id, name");
-
-        if (eldersError) throw eldersError;
-
-        // Fetch all members
-        const { data: membersData, error: membersError } = await supabase
-          .from("members")
-          .select("id, name, email");
-
-        if (membersError) throw membersError;
-
-        // Fetch current elder assignments
-        const { data: assignmentsData, error: assignmentsError } = await supabase
-          .from("member_under_elder")
-          .select("elder_id, member_id");
-
-        if (assignmentsError) throw assignmentsError;
-
-        // Process the data
-        setElders(eldersData || []);
-        setMembers(membersData || []);
-
-        // Create initial assignments map
-        const assignments: Record<string, string[]> = { unassigned: [] };
-        
-        // Initialize assignments for each elder
-        eldersData?.forEach((elder) => {
-          assignments[elder.id] = [];
-        });
-
-        // Add members to their assigned elders
-        assignmentsData?.forEach((assignment) => {
-          if (assignments[assignment.elder_id]) {
-            assignments[assignment.elder_id].push(assignment.member_id);
-          }
-        });
-
-        // Find unassigned members
-        const assignedMemberIds = assignmentsData?.map(a => a.member_id) || [];
-        const unassignedMembers = membersData?.filter(
-          member => !assignedMemberIds.includes(member.id)
-        ) || [];
-        
-        assignments.unassigned = unassignedMembers.map(m => m.id);
-
-        setElderAssignments(assignments);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load elders and members data",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [toast]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // Fetch all members with elder role
+      const { data: eldersData, error: eldersError } = await supabase
+        .from("members")
+        .select("id, name")
+        .eq("role", "elder");
+
+      if (eldersError) throw eldersError;
+
+      // Fetch all regular members (non-elders)
+      const { data: membersData, error: membersError } = await supabase
+        .from("members")
+        .select("id, name, email")
+        .neq("role", "elder"); // Exclude elders from general members list
+
+      if (membersError) throw membersError;
+
+      // Fetch current elder assignments
+      const { data: assignmentsData, error: assignmentsError } = await supabase
+        .from("member_under_elder")
+        .select("elder_id, member_id");
+
+      if (assignmentsError) throw assignmentsError;
+
+      // Process the data
+      setElders(eldersData || []);
+      setMembers(membersData || []);
+
+      // Create initial assignments map
+      const assignments: Record<string, string[]> = { unassigned: [] };
+      
+      // Initialize assignments for each elder
+      eldersData?.forEach((elder) => {
+        assignments[elder.id] = [];
+      });
+
+      // Add members to their assigned elders
+      assignmentsData?.forEach((assignment) => {
+        if (assignments[assignment.elder_id]) {
+          assignments[assignment.elder_id].push(assignment.member_id);
+        }
+      });
+
+      // Find unassigned members
+      const assignedMemberIds = assignmentsData?.map(a => a.member_id) || [];
+      const unassignedMembers = membersData?.filter(
+        member => !assignedMemberIds.includes(member.id)
+      ) || [];
+      
+      assignments.unassigned = unassignedMembers.map(m => m.id);
+
+      setElderAssignments(assignments);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load elders and members data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleMemberDrop = async (memberId: string, targetElderId: string) => {
     try {
@@ -169,7 +172,7 @@ const MemberManager: React.FC = () => {
       });
       
       // Refresh the data to ensure state is consistent with database
-      window.location.reload();
+      fetchData();
     }
   };
 
@@ -181,70 +184,6 @@ const MemberManager: React.FC = () => {
   const handleMemberAdded = () => {
     // Refresh the data after a new member is added
     fetchData();
-  };
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      // Fetch all elders
-      const { data: eldersData, error: eldersError } = await supabase
-        .from("elders")
-        .select("id, name");
-
-      if (eldersError) throw eldersError;
-
-      // Fetch all members
-      const { data: membersData, error: membersError } = await supabase
-        .from("members")
-        .select("id, name, email");
-
-      if (membersError) throw membersError;
-
-      // Fetch current elder assignments
-      const { data: assignmentsData, error: assignmentsError } = await supabase
-        .from("member_under_elder")
-        .select("elder_id, member_id");
-
-      if (assignmentsError) throw assignmentsError;
-
-      // Process the data
-      setElders(eldersData || []);
-      setMembers(membersData || []);
-
-      // Create initial assignments map
-      const assignments: Record<string, string[]> = { unassigned: [] };
-      
-      // Initialize assignments for each elder
-      eldersData?.forEach((elder) => {
-        assignments[elder.id] = [];
-      });
-
-      // Add members to their assigned elders
-      assignmentsData?.forEach((assignment) => {
-        if (assignments[assignment.elder_id]) {
-          assignments[assignment.elder_id].push(assignment.member_id);
-        }
-      });
-
-      // Find unassigned members
-      const assignedMemberIds = assignmentsData?.map(a => a.member_id) || [];
-      const unassignedMembers = membersData?.filter(
-        member => !assignedMemberIds.includes(member.id)
-      ) || [];
-      
-      assignments.unassigned = unassignedMembers.map(m => m.id);
-
-      setElderAssignments(assignments);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load elders and members data",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (loading) {
@@ -277,7 +216,7 @@ const MemberManager: React.FC = () => {
             <div key={elder.id} className="col-span-1">
               <ElderBucket
                 elderId={elder.id}
-                elderName={elder.name}
+                elderName={elder.name || "Unknown Elder"}
                 members={getMembersForElder(elder.id)}
                 onMemberDrop={handleMemberDrop}
               />
