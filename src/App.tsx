@@ -13,15 +13,6 @@ import NotFound from "./pages/NotFound";
 import RoleGuard from "@/components/auth/RoleGuard";
 
 // Lazy-loaded components for better initial loading performance
-const WhoWeAre = lazy(() => import("./pages/WhoWeAre"));
-const OurFaith = lazy(() => import("./pages/OurFaith"));
-const OurLeadership = lazy(() => import("./pages/OurLeadership"));
-const Events = lazy(() => import("./pages/Events"));
-const Contact = lazy(() => import("./pages/Contact"));
-const GetInvolved = lazy(() => import("./pages/GetInvolved"));
-const Sermons = lazy(() => import("./pages/Sermons"));
-const Give = lazy(() => import("./pages/Give"));
-const Constitution = lazy(() => import("./pages/Constitution"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -45,38 +36,6 @@ const PageLoader = () => (
   </div>
 );
 
-// Define public routes and protected routes
-const publicRoutes = [
-  { path: "/", element: <Index /> },
-  { path: "/who-we-are", element: <WhoWeAre /> },
-  { path: "/our-faith", element: <OurFaith /> },
-  { path: "/our-leadership", element: <OurLeadership /> },
-  { path: "/events", element: <Events /> },
-  { path: "/sermons", element: <Sermons /> },
-  { path: "/contact", element: <Contact /> },
-  { path: "/get-involved", element: <GetInvolved /> },
-  { path: "/give", element: <Give /> },
-  { path: "/constitution", element: <Constitution /> }
-];
-
-const protectedRoutes = [
-  { 
-    path: "/admin", 
-    element: <Admin />, 
-    roles: ['admin', 'member', 'elder', 'it', 'volunteer'] as UserRole[] 
-  },
-  { 
-    path: "/profile", 
-    element: <Profile />, 
-    roles: ['admin', 'member', 'elder', 'it', 'volunteer'] as UserRole[] 
-  },
-  {
-    path: "/manage-members",
-    element: <ManageMembers />,
-    roles: ['admin', 'elder'] as UserRole[]
-  }
-];
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -86,25 +45,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Public Routes */}
-            {publicRoutes.map(route => (
-              <Route 
-                key={route.path} 
-                path={route.path} 
-                element={
-                  route.path === "/" ? (
-                    route.element
-                  ) : (
-                    <Layout>
-                      <Suspense fallback={<PageLoader />}>
-                        <RoleGuard isPublicRoute={true}>
-                          {route.element}
-                        </RoleGuard>
-                      </Suspense>
-                    </Layout>
-                  )
-                } 
-              />
-            ))}
+            <Route path="/" element={<Index />} />
 
             {/* Auth Route */}
             <Route 
@@ -118,9 +59,9 @@ const App = () => (
               } 
             />
 
-            {/* Admin Route - Without Layout component */}
+            {/* Admin Route */}
             <Route 
-              path="/admin" 
+              path="/admin/*" 
               element={
                 <RoleGuard allowedRoles={['admin', 'elder', 'it', 'volunteer']}>
                   <Suspense fallback={<PageLoader />}>

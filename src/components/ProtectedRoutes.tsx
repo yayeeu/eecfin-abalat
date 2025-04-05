@@ -13,15 +13,13 @@ import NotFound from "../pages/NotFound";
 const ProtectedRoutes = () => {
   return (
     <AuthRoute>
-      <CustomLayout>
-        <Routes>
-          <Route path="/" element={<Admin />} />
-          <Route path="/admin/*" element={<Admin />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/manage-members" element={<ManageMembers />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </CustomLayout>
+      <Routes>
+        <Route path="/" element={<Admin />} />
+        <Route path="/admin/*" element={<Admin />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/manage-members" element={<ManageMembers />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </AuthRoute>
   );
 };

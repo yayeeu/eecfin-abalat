@@ -13,11 +13,9 @@ import {
 } from "@/components/ui/sidebar";
 import { 
   Users, 
-  Settings, 
   LayoutDashboard, 
   BookOpen, 
   Church, 
-  Image, 
   Calendar
 } from "lucide-react";
 import RoleGuard from "@/components/auth/RoleGuard";
@@ -50,14 +48,14 @@ const AdminSidebar: React.FC = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <RoleGuard allowedRoles={["admin"]}>
+        <RoleGuard allowedRoles={["admin", "elder"]}>
           <SidebarGroup>
             <SidebarGroupLabel>Members</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem className={isActive("/admin/manage-members") ? "active" : ""}>
+                <SidebarMenuItem className={isActive("/manage-members") ? "active" : ""}>
                   <SidebarMenuButton asChild>
-                    <Link to="/admin/manage-members">
+                    <Link to="/manage-members">
                       <Users className="mr-2 h-4 w-4" />
                       <span>Manage Members</span>
                     </Link>
@@ -72,30 +70,12 @@ const AdminSidebar: React.FC = () => {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </RoleGuard>
 
-        <RoleGuard allowedRoles={["admin", "elder"]}>
-          <SidebarGroup>
-            <SidebarGroupLabel>Leadership</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
                 <SidebarMenuItem className={isActive("/admin/manage-elders") ? "active" : ""}>
                   <SidebarMenuButton asChild>
                     <Link to="/admin/manage-elders">
                       <Church className="mr-2 h-4 w-4" />
                       <span>Manage Elders</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                
-                <SidebarMenuItem className={isActive("/admin/my-members") ? "active" : ""}>
-                  <SidebarMenuButton asChild>
-                    <Link to="/admin/my-members">
-                      <Users className="mr-2 h-4 w-4" />
-                      <span>My Members</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -114,15 +94,6 @@ const AdminSidebar: React.FC = () => {
                     <Link to="/admin/manage-ministries">
                       <BookOpen className="mr-2 h-4 w-4" />
                       <span>Manage Ministries</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-
-                <SidebarMenuItem className={isActive("/admin/manage-slider") ? "active" : ""}>
-                  <SidebarMenuButton asChild>
-                    <Link to="/admin/manage-slider">
-                      <Image className="mr-2 h-4 w-4" />
-                      <span>Manage Slider</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

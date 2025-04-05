@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -17,16 +18,10 @@ import AdminHeader from '@/components/admin/AdminHeader';
 
 const ManageMembers = () => {
   const { toast } = useToast();
-  const { userRole, signOut } = useAuth();
+  const { userRole } = useAuth();
   const queryClient = useQueryClient();
   const [elderGroups, setElderGroups] = useState<{ [key: string]: Member[] }>({});
   const [unassignedMembers, setUnassignedMembers] = useState<Member[]>([]);
-  const [activeSection, setActiveSection] = useState('manage_members');
-
-  // Handle menu click for the sidebar
-  const handleMenuClick = (id: string) => {
-    setActiveSection(id);
-  };
 
   // Get all members
   const { data: members, isLoading: loadingMembers, refetch: refetchMembers } = useQuery({

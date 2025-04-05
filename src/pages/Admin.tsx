@@ -15,15 +15,9 @@ interface AdminProps {
 const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
   const [activeSectionState, setActiveSection] = useState<string>(activeSection);
   const navigate = useNavigate();
-  const { userRole, signOut, signUp } = useAuth();
+  const { userRole } = useAuth();
 
   const handleMenuClick = (id: string) => {
-    // Special case for the 'manage_members' item which has a direct URL
-    if (id === 'manage_members') {
-      navigate('/manage-members');
-      return;
-    }
-    
     // Check if user has access to this section
     if (userRole && (userRole === 'admin' || sectionAccess[id]?.includes(userRole))) {
       setActiveSection(id);
@@ -33,12 +27,10 @@ const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
   // Define which roles can access which sections based on requirements
   const sectionAccess: Record<string, UserRole[]> = {
     dashboard: ['admin', 'elder'],
-    slider: ['admin', 'it', 'volunteer'],
     ministries: ['admin'],
     members: ['admin', 'elder'],
-    settings: ['admin'],
-    auth: ['admin', 'member', 'elder', 'it', 'volunteer'],
-    register: ['admin'], // Only admin can access member registration
+    elders: ['admin', 'elder'],
+    events: ['admin'],
     manage_members: ['admin', 'elder'],
   };
 
@@ -61,8 +53,7 @@ const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
 
             {/* Content Component */}
             <AdminContent 
-              activeSection={activeSectionState} 
-              signUp={signUp} 
+              activeSection={activeSectionState}
             />
           </div>
         </div>
