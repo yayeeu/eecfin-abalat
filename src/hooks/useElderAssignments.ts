@@ -41,6 +41,7 @@ export const useElderAssignments = () => {
         throw new Error("Elder role not found");
       }
 
+      // Get all active elders
       const eldersResult = await supabase
         .from("members")
         .select("id, name")
@@ -71,7 +72,7 @@ export const useElderAssignments = () => {
       // Create initial assignments map
       const assignments: ElderAssignmentsMap = { unassigned: [] };
       
-      // Initialize assignments for each elder
+      // Initialize assignments for each elder - ensure all elders appear even with no assignments
       eldersResult.data?.forEach((elder) => {
         assignments[elder.id] = [];
       });

@@ -2,7 +2,6 @@
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { Card, CardContent } from '../ui/card';
-import { Badge } from '../ui/badge';
 import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SimpleMember } from '@/hooks/useElderAssignments';
@@ -38,10 +37,6 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, currentElderId }) => {
         <div className="flex-1 min-w-0">
           <div className="font-medium truncate">{member.name || "Unnamed Member"}</div>
         </div>
-        
-        <Badge variant="outline" className="ml-2">
-          {currentElderId === "unassigned" ? "Unassigned" : "Assigned"}
-        </Badge>
       </CardContent>
     </Card>
   );
