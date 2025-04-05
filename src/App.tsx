@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import RoleGuard from "@/components/auth/RoleGuard";
 import React from "react";
+import { ToastProvider } from "@/hooks/use-toast";
 
 // Lazy-loaded components for better initial loading performance
 const Admin = lazy(() => import("./pages/Admin"));
@@ -37,59 +38,61 @@ const PageLoader = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
+    <ToastProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
 
-            {/* Auth Route */}
-            <Route 
-              path="/auth" 
-              element={
-                <RoleGuard isPublicRoute={true}>
-                  <Suspense fallback={<PageLoader />}>
-                    <Auth />
-                  </Suspense>
-                </RoleGuard>
-              } 
-            />
-
-            {/* Admin Route - now accessible to all authenticated users */}
-            <Route 
-              path="/admin/*" 
-              element={
-                <RoleGuard>
-                  <Suspense fallback={<PageLoader />}>
-                    <Admin />
-                  </Suspense>
-                </RoleGuard>
-              } 
-            />
-
-            {/* Protected routes now handled by ProtectedRoutes component */}
-            <Route 
-              path="/*" 
-              element={
-                <RoleGuard>
-                  <Layout>
+              {/* Auth Route */}
+              <Route 
+                path="/auth" 
+                element={
+                  <RoleGuard isPublicRoute={true}>
                     <Suspense fallback={<PageLoader />}>
-                      <ProtectedRoutes />
+                      <Auth />
                     </Suspense>
-                  </Layout>
-                </RoleGuard>
-              } 
-            />
+                  </RoleGuard>
+                } 
+              />
 
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+              {/* Admin Route - now accessible to all authenticated users */}
+              <Route 
+                path="/admin/*" 
+                element={
+                  <RoleGuard>
+                    <Suspense fallback={<PageLoader />}>
+                      <Admin />
+                    </Suspense>
+                  </RoleGuard>
+                } 
+              />
+
+              {/* Protected routes now handled by ProtectedRoutes component */}
+              <Route 
+                path="/*" 
+                element={
+                  <RoleGuard>
+                    <Layout>
+                      <Suspense fallback={<PageLoader />}>
+                        <ProtectedRoutes />
+                      </Suspense>
+                    </Layout>
+                  </RoleGuard>
+                } 
+              />
+
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ToastProvider>
   </QueryClientProvider>
 );
 

@@ -10,6 +10,7 @@ import RoleGuard from "@/components/auth/RoleGuard";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { ToastProvider } from "@/hooks/use-toast";
 
 // Lazy-loaded components
 const Auth = lazy(() => import("./pages/Auth"));
@@ -39,90 +40,92 @@ const PageLoader = () => (
 const AppRoutes = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Index />} />
-              
-              {/* Auth Route */}
-              <Route 
-                path="/auth" 
-                element={
-                  <RoleGuard isPublicRoute={true}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Auth />
-                    </Suspense>
+      <ToastProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Index />} />
+                
+                {/* Auth Route */}
+                <Route 
+                  path="/auth" 
+                  element={
+                    <RoleGuard isPublicRoute={true}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Auth />
+                      </Suspense>
+                    </RoleGuard>
+                  } 
+                />
+                
+                {/* Protected Routes */}
+                <Route element={
+                  <RoleGuard>
+                    <Layout>
+                      {/* This is where we need to pass the Outlet as children */}
+                      <Suspense fallback={<PageLoader />} />
+                    </Layout>
                   </RoleGuard>
-                } 
-              />
-              
-              {/* Protected Routes */}
-              <Route element={
-                <RoleGuard>
-                  <Layout>
-                    {/* This is where we need to pass the Outlet as children */}
-                    <Suspense fallback={<PageLoader />} />
-                  </Layout>
-                </RoleGuard>
-              }>
-                {/* Admin Routes */}
-                <Route 
-                  path="/admin/*" 
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <Admin />
-                    </Suspense>
-                  } 
-                />
+                }>
+                  {/* Admin Routes */}
+                  <Route 
+                    path="/admin/*" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <Admin />
+                      </Suspense>
+                    } 
+                  />
+                  
+                  <Route 
+                    path="/profile" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <Profile />
+                      </Suspense>
+                    } 
+                  />
+                  
+                  <Route 
+                    path="/admin/add-member" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AddMember />
+                      </Suspense>
+                    } 
+                  />
+                  
+                  <Route 
+                    path="/admin/edit-member/:memberId" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AddMember />
+                      </Suspense>
+                    } 
+                  />
+                  
+                  {/* Follow Ups Route */}
+                  <Route 
+                    path="/follow-ups" 
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <FollowUps />
+                      </Suspense>
+                    } 
+                  />
+                </Route>
                 
-                <Route 
-                  path="/profile" 
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <Profile />
-                    </Suspense>
-                  } 
-                />
-                
-                <Route 
-                  path="/admin/add-member" 
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <AddMember />
-                    </Suspense>
-                  } 
-                />
-                
-                <Route 
-                  path="/admin/edit-member/:memberId" 
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <AddMember />
-                    </Suspense>
-                  } 
-                />
-                
-                {/* Follow Ups Route */}
-                <Route 
-                  path="/follow-ups" 
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <FollowUps />
-                    </Suspense>
-                  } 
-                />
-              </Route>
-              
-              {/* 404 Route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+                {/* 404 Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </ToastProvider>
     </QueryClientProvider>
   );
 };
