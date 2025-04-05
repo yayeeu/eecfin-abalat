@@ -75,7 +75,7 @@ export interface Member {
   gender?: string;
   marital_status?: string;
   spouse_name?: string;
-  children_names?: string;
+  children_names?: string; // This should be a string
   previous_church?: string;
   role_in_previous_church?: string;
   emergency_contact?: string;
@@ -83,7 +83,7 @@ export interface Member {
   status?: 'active' | 'inactive' | string; // Updated to accept any string value
   // New fields
   is_baptised?: boolean;
-  num_children?: number;
+  num_children?: number; // This should be a number
   member_type_id?: string; // Added missing member_type_id property
   // Geographic coordinates
   latitude?: number;
