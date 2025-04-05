@@ -1,21 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-import { Loader2 } from 'lucide-react';
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AdminSidebar from '@/components/admin/AdminSidebar';
-import AdminHeader from '@/components/admin/AdminHeader';
-import CustomFooter from '@/components/CustomFooter';
-import { getMember, updateMember, createMember, getRoleByName } from '@/lib/memberService';
-import { getMembersForDropdown } from '@/lib/services/memberDropdownService';
-import { getAllRoles } from '@/lib/services/roleService';
-import { toast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -25,51 +13,54 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { 
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { createMember, getMember, updateMember, getRoleByName } from '@/lib/memberService';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
-} from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { getAllRoles } from '@/lib/roleService';
+import { Loader2 } from 'lucide-react';
 
-const memberSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
-  email: z.string().email({ message: 'Please enter a valid email address' }).optional().or(z.literal('')),
-  phone: z.string().optional().or(z.literal('')),
-  address: z.string().optional().or(z.literal('')),
-  city: z.string().optional().or(z.literal('')),
-  postal_code: z.string().optional().or(z.literal('')),
-  role: z.string().optional(),
-  gender: z.string().optional(),
-  marital_status: z.string().optional(),
-  spouse_name: z.string().optional().or(z.literal('')),
-  children_names: z.string().optional().or(z.literal('')),
-  previous_church: z.string().optional().or(z.literal('')),
-  role_in_previous_church: z.string().optional().or(z.literal('')),
-  emergency_contact: z.string().optional().or(z.literal('')),
+// Create form schema with proper type transformations
+const formSchema = z.object({
+  name: z.string().min(1, { message: 'Name is required' }),
+  email: z.string().email().optional().nullable(),
   status: z.string().optional(),
+  phone: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  postal_code: z.string().optional().nullable(),
+  role: z.string().optional(),
+  gender: z.string().optional().nullable(),
+  marital_status: z.string().optional().nullable(),
+  spouse_name: z.string().optional().nullable(),
+  children_names: z.string().optional().nullable(),
+  previous_church: z.string().optional().nullable(),
+  role_in_previous_church: z.string().optional().nullable(),
+  emergency_contact: z.string().optional().nullable(),
   is_baptised: z.boolean().optional(),
   has_letter_from_prev_church: z.boolean().optional(),
-  num_children: z.string().optional()
-    .transform(val => val === '' ? 0 : parseInt(val, 10))
-    .pipe(z.number().min(0).optional()),
+  num_children: z.string().transform(val => val ? parseInt(val, 10) : 0),
 });
 
-type MemberFormValues = z.infer<typeof memberSchema>;
+// Define the form type from the schema
+type MemberFormValues = z.infer<typeof formSchema>;
 
 const AddMember = () => {
-  const { memberId } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { memberId } = useParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState("basic");
 
-  // Initialize form
   const form = useForm<MemberFormValues>({
-    resolver: zodResolver(memberSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -92,59 +83,70 @@ const AddMember = () => {
     },
   });
 
-  // Fetch member data if editing
-  const { data: member, isLoading: memberLoading } = useQuery({
-    queryKey: ['member', memberId],
-    queryFn: () => getMember(memberId as string),
-    enabled: !!memberId,
-  });
-
-  // Fetch roles for dropdown
-  const { data: roles, isLoading: rolesLoading } = useQuery({
-    queryKey: ['roles'],
-    queryFn: getAllRoles,
-  });
-
-  // Pre-fill form when editing existing member
   useEffect(() => {
-    if (member && !memberLoading) {
-      form.reset({
-        name: member.name || '',
-        email: member.email || '',
-        phone: member.phone || '',
-        address: member.address || '',
-        city: member.city || '',
-        postal_code: member.postal_code || '',
-        role: member.roles?.name || 'member',
-        gender: member.gender || '',
-        marital_status: member.marital_status || '',
-        spouse_name: member.spouse_name || '',
-        children_names: member.children_names || '',
-        previous_church: member.previous_church || '',
-        role_in_previous_church: member.role_in_previous_church || '',
-        emergency_contact: member.emergency_contact || '',
-        status: member.status || 'active',
-        is_baptised: member.is_baptised || false,
-        has_letter_from_prev_church: member.has_letter_from_prev_church || false,
-        num_children: member.num_children !== undefined ? member.num_children.toString() : '0', // Convert number to string for form
-      });
-    }
-  }, [member, memberLoading, form]);
+    const fetchMember = async () => {
+      if (memberId) {
+        try {
+          const member = await getMember(memberId);
+          if (member) {
+            form.setValue('name', member.name);
+            form.setValue('email', member.email || '');
+            form.setValue('phone', member.phone || '');
+            form.setValue('address', member.address || '');
+            form.setValue('city', member.city || '');
+            form.setValue('postal_code', member.postal_code || '');
+            form.setValue('gender', member.gender || '');
+            form.setValue('marital_status', member.marital_status || '');
+            form.setValue('spouse_name', member.spouse_name || '');
+            form.setValue('children_names', member.children_names || '');
+            form.setValue('previous_church', member.previous_church || '');
+            form.setValue('role_in_previous_church', member.role_in_previous_church || '');
+            form.setValue('emergency_contact', member.emergency_contact || '');
+            form.setValue('status', member.status || 'active');
+            form.setValue('is_baptised', member.is_baptised || false);
+            form.setValue('has_letter_from_prev_church', member.has_letter_from_prev_church || false);
+            form.setValue('num_children', member.num_children?.toString() || '0');
+            
+            // Fetch role by id and set the role name
+            if (member.role_id) {
+              const roles = await getAllRoles();
+              const role = roles.find(r => r.id === member.role_id);
+              form.setValue('role', role?.name || 'member');
+            } else {
+              form.setValue('role', 'member');
+            }
+          }
+        } catch (error) {
+          toast({
+            title: 'Error',
+            description: 'Failed to load member details',
+            variant: 'destructive',
+          });
+        }
+      }
+    };
 
-  // Handle form submission
+    fetchMember();
+  }, [memberId, form, toast]);
+
   const onSubmit = async (data: MemberFormValues) => {
     try {
       setIsSubmitting(true);
       
-      // Ensure we have a name as it's required by the backend
       if (!data.name) {
+        toast({
+          title: 'Error',
+          description: 'Name is required',
+          variant: 'destructive',
+        });
         throw new Error('Name is required');
       }
       
-      // Get the transformed num_children value (will be a number after zod transformation)
+      // Transform data before sending to API
       const formattedData = {
         ...data,
-        name: data.name, // Ensure name is explicitly passed
+        name: data.name,
+        // num_children is automatically transformed to a number by zod
       };
       
       if (memberId) {
@@ -162,7 +164,7 @@ const AddMember = () => {
           description: 'Member updated successfully',
         });
       } else {
-        // Get role id by name for create
+        // Get role id by name for new member
         const roleData = await getRoleByName(data.role || 'member');
         
         // Create new member
@@ -177,13 +179,13 @@ const AddMember = () => {
         });
       }
       
-      // Redirect back to members management
-      navigate('/admin/manage-members');
-    } catch (error: any) {
-      console.error('Error saving member:', error);
+      // Navigate back to members list
+      navigate('/admin/members');
+    } catch (error) {
+      console.error('Error submitting form:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to save member',
+        description: error instanceof Error ? error.message : 'Failed to save member',
         variant: 'destructive',
       });
     } finally {
@@ -191,396 +193,306 @@ const AddMember = () => {
     }
   };
 
-  // Show loading state
-  if (memberId && memberLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading member data...</span>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen w-full">
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          {/* Sidebar Component */}
-          <AdminSidebar />
-
-          {/* Main content area */}
-          <div className="flex flex-col flex-1">
-            {/* Header Component */}
-            <AdminHeader />
-
-            {/* Content */}
-            <div className="flex-1 p-6">
-              <Card className="w-full max-w-5xl mx-auto">
-                <CardHeader>
-                  <CardTitle>{memberId ? 'Edit Member' : 'Add New Member'}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="mb-6">
-                      <TabsTrigger value="basic">Basic Information</TabsTrigger>
-                      <TabsTrigger value="personal">Personal Information</TabsTrigger>
-                      <TabsTrigger value="church">Church Information</TabsTrigger>
-                    </TabsList>
-                    
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <TabsContent value="basic" className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="name"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Full Name*</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="email"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Email</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} type="email" />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="phone"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Phone</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="address"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Address</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="city"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>City</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="postal_code"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Postal Code</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="status"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Status</FormLabel>
-                                  <Select 
-                                    onValueChange={field.onChange} 
-                                    defaultValue={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select member status" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="active">Active</SelectItem>
-                                      <SelectItem value="inactive">Inactive</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="role"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Role</FormLabel>
-                                  <Select 
-                                    onValueChange={field.onChange} 
-                                    defaultValue={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select member role" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {rolesLoading ? (
-                                        <SelectItem value="loading">Loading...</SelectItem>
-                                      ) : (
-                                        roles?.map((role) => (
-                                          <SelectItem key={role.id} value={role.name}>
-                                            {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
-                                          </SelectItem>
-                                        ))
-                                      )}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="personal" className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="gender"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Gender</FormLabel>
-                                  <Select 
-                                    onValueChange={field.onChange} 
-                                    defaultValue={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select gender" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="male">Male</SelectItem>
-                                      <SelectItem value="female">Female</SelectItem>
-                                      <SelectItem value="other">Other</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="marital_status"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Marital Status</FormLabel>
-                                  <Select 
-                                    onValueChange={field.onChange} 
-                                    defaultValue={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select marital status" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="single">Single</SelectItem>
-                                      <SelectItem value="married">Married</SelectItem>
-                                      <SelectItem value="divorced">Divorced</SelectItem>
-                                      <SelectItem value="widowed">Widowed</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="spouse_name"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Spouse Name</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="num_children"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Number of Children</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} type="number" min="0" />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="children_names"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Children Names</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} placeholder="Separate with commas" />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="emergency_contact"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Emergency Contact</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} placeholder="Name and number" />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="church" className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="previous_church"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Previous Church</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="role_in_previous_church"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Role in Previous Church</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="is_baptised"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel>Is Baptised</FormLabel>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="has_letter_from_prev_church"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel>Has Letter from Previous Church</FormLabel>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </TabsContent>
-                        
-                        <div className="flex justify-end space-x-2 pt-4">
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            onClick={() => navigate('/admin/manage-members')}
-                          >
-                            Cancel
-                          </Button>
-                          <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : memberId ? 'Update Member' : 'Create Member'}
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Footer Component */}
-            <CustomFooter />
-          </div>
+    <div className="container mx-auto py-10">
+      <div className="mb-8">
+        <Button variant="ghost" onClick={() => navigate('/admin/members')}>
+          &larr; Back to Members
+        </Button>
+      </div>
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm w-full max-w-2xl mx-auto">
+        <div className="flex flex-col space-y-1.5 p-6">
+          <h3 className="text-2xl font-semibold tracking-tight">
+            {memberId ? 'Edit Member' : 'Add New Member'}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {memberId ? 'Update member details' : 'Enter details for the new member'}
+          </p>
         </div>
-      </SidebarProvider>
+        <div className="p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Member Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="example@eecf.org" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="251911000000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input placeholder="City" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="postal_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Postal Code</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Postal Code" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="member">Member</SelectItem>
+                        <SelectItem value="elder">Elder</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="it">IT</SelectItem>
+                        <SelectItem value="volunteer">Volunteer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gender</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Gender" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="marital_status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Marital Status</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Marital Status" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="spouse_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Spouse Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Spouse Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="children_names"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Children Names</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Children Names" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="previous_church"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Previous Church</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Previous Church" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="role_in_previous_church"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role in Previous Church</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Role in Previous Church" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="emergency_contact"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emergency Contact</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Emergency Contact" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="is_baptised"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-normal">
+                        Is Baptised
+                      </FormLabel>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="has_letter_from_prev_church"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-normal">
+                        Has Letter from Previous Church
+                      </FormLabel>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="num_children"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of Children</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Number of Children"
+                        type="number"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {memberId ? 'Update Member' : 'Create Member'}
+              </Button>
+            </form>
+          </Form>
+        </div>
+      </div>
     </div>
   );
 };

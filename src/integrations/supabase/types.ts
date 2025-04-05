@@ -150,7 +150,7 @@ export type Database = {
       members: {
         Row: {
           address: string | null
-          children_names: string | null
+          children_names: number | null
           city: string | null
           created_at: string
           email: string | null
@@ -177,7 +177,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
-          children_names?: string | null
+          children_names?: number | null
           city?: string | null
           created_at?: string
           email?: string | null
@@ -204,7 +204,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
-          children_names?: string | null
+          children_names?: number | null
           city?: string | null
           created_at?: string
           email?: string | null
