@@ -49,7 +49,7 @@ const ManageMembers = () => {
       console.log("Elders loaded:", elders);
     }
     if (members) {
-      console.log("Members loaded:", members);
+      console.log("Members loaded:", members.length, "members found");
     }
   }, [elders, members]);
 
@@ -112,6 +112,8 @@ const ManageMembers = () => {
   useEffect(() => {
     if (!members) return;
     
+    console.log("Organizing members:", members.length, "members found");
+    
     const groups: { [key: string]: Member[] } = {};
     const unassigned: Member[] = [];
 
@@ -124,6 +126,12 @@ const ManageMembers = () => {
 
     // Group members by their assigned elder
     members.forEach(member => {
+      // Skip elders in member assignment (we don't want to assign elders to other elders)
+      if (member.role === 'elder' || member.roles?.name === 'elder') {
+        console.log("Skipping elder in member assignments:", member.name);
+        return;
+      }
+      
       if (member.assigned_elder && member.assigned_elder.elder_id) {
         const elderId = member.assigned_elder.elder_id;
         if (groups[elderId]) {
@@ -140,9 +148,12 @@ const ManageMembers = () => {
     setElderGroups(groups);
     setUnassignedMembers(unassigned);
     
-    console.log("Elder groups updated:", groups);
-    console.log("Unassigned members updated:", unassigned);
+    console.log("Elder groups updated:", Object.keys(groups).length, "elders with assigned members");
+    console.log("Unassigned members updated:", unassigned.length, "members");
   }, [members, elders]);
+
+  // Make sure we're loading until we have both members and elders
+  const isLoading = loadingMembers || loadingElders;
 
   return (
     <div className="min-h-screen w-full">
@@ -163,7 +174,7 @@ const ManageMembers = () => {
                 description="Assign members to elders using drag and drop functionality."
               />
               
-              {loadingMembers || loadingElders ? (
+              {isLoading ? (
                 <MemberLoadingState message={loadingElders ? "Loading elders data..." : "Loading members data..."} />
               ) : eldersError ? (
                 <div className="bg-red-50 border border-red-200 p-6 rounded-lg">

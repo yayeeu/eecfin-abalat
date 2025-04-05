@@ -2,12 +2,12 @@
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { Card, CardContent } from '../ui/card';
-import { SimpleMember } from '@/hooks/useElderAssignments';
+import { Member } from '@/types/database.types';
 import { cn } from '@/lib/utils';
 
 interface MemberCardProps {
-  member: SimpleMember;
-  currentElderId: string;
+  member: Member;
+  currentElderId: string | "unassigned";
 }
 
 const MemberCard: React.FC<MemberCardProps> = ({ member, currentElderId }) => {
@@ -30,6 +30,9 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, currentElderId }) => {
     >
       <CardContent className="p-3">
         <div className="font-medium truncate">{member.name || "Unnamed Member"}</div>
+        {member.email && (
+          <div className="text-xs text-gray-500 truncate">{member.email}</div>
+        )}
       </CardContent>
     </Card>
   );

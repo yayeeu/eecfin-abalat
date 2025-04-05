@@ -4,29 +4,24 @@ import { useDrop } from "react-dnd";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import MemberCard from "./MemberCard";
-import { SimpleMember } from "@/hooks/useElderAssignments";
+import { Member } from "@/types/database.types";
 
 interface ElderBucketProps {
-  elderId: string;
+  elderId: string | null;
   elderName: string;
-  members: SimpleMember[];
-  onMemberDrop?: (memberId: string, targetElderId: string) => void;
-  onMoveMember?: (memberId: string, elderId: string | null) => void;
+  members: Member[];
+  onMoveMember: (memberId: string, elderId: string | null) => void;
 }
 
 const ElderBucket: React.FC<ElderBucketProps> = ({
   elderId,
   elderName,
   members,
-  onMemberDrop,
   onMoveMember,
 }) => {
   const handleDrop = (item: { id: string }) => {
-    if (onMemberDrop && elderId !== null) {
-      onMemberDrop(item.id, elderId);
-    } else if (onMoveMember) {
-      onMoveMember(item.id, elderId);
-    }
+    console.log(`Dropping member ${item.id} onto elder ${elderId || 'unassigned'}`);
+    onMoveMember(item.id, elderId);
   };
 
   const [{ isOver }, drop] = useDrop({

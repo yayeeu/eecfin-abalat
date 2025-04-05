@@ -22,7 +22,7 @@ const MemberContentSection: React.FC<MemberContentSectionProps> = ({
 }) => {
   useEffect(() => {
     console.log('MemberContentSection rendered with elders:', elders);
-    console.log('Unassigned members:', unassignedMembers);
+    console.log('Unassigned members:', unassignedMembers.length);
     console.log('Elder groups:', elderGroups);
   }, [elders, unassignedMembers, elderGroups]);
 
@@ -58,11 +58,11 @@ const MemberContentSection: React.FC<MemberContentSectionProps> = ({
           <Card className="bg-gray-50 border-dashed">
             <CardHeader>
               <CardTitle>Unassigned Members</CardTitle>
-              <CardDescription>Members not assigned to any elder</CardDescription>
+              <CardDescription>Members not assigned to any elder ({unassignedMembers.length})</CardDescription>
             </CardHeader>
             <CardContent>
               <ElderBucket 
-                elderId="unassigned"
+                elderId={null}
                 elderName="Unassigned"
                 members={unassignedMembers}
                 onMoveMember={onMoveMember}
@@ -74,10 +74,13 @@ const MemberContentSection: React.FC<MemberContentSectionProps> = ({
           {elders && elders.map(elder => (
             <Card key={elder.id} className="bg-white">
               <CardHeader>
-                <CardTitle>{elder.name}</CardTitle>
+                <CardTitle>{elder.name || 'Unnamed Elder'}</CardTitle>
                 <CardDescription>
                   {elder.email && `Email: ${elder.email}`}
                   {elder.phone && <><br />Phone: {elder.phone}</>}
+                  <div className="mt-1">
+                    Assigned members: {(elderGroups[elder.id] || []).length}
+                  </div>
                 </CardDescription>
               </CardHeader>
               <CardContent>
