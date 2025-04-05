@@ -134,6 +134,11 @@ const AddMember = () => {
     try {
       setIsSubmitting(true);
       
+      // Ensure we have a name as it's required by the backend
+      if (!data.name) {
+        throw new Error('Name is required');
+      }
+      
       if (memberId) {
         // Get role id by name for update
         const roleData = await getRoleByName(data.role || 'member');
@@ -141,6 +146,7 @@ const AddMember = () => {
         // Update existing member
         await updateMember(memberId, {
           ...data,
+          name: data.name, // Ensure name is explicitly passed
           role_id: roleData?.id,
         });
         
@@ -155,6 +161,7 @@ const AddMember = () => {
         // Create new member
         await createMember({
           ...data,
+          name: data.name, // Ensure name is explicitly passed
           role_id: roleData?.id,
         });
         
