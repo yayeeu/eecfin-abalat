@@ -21,10 +21,7 @@ export const getAllMembers = async () => {
       assigned_elder:member_under_elder!member_id(
         id,
         elder_id,
-        elder:members!member_under_elder_elder_id_fkey(
-          id, 
-          name
-        )
+        elder:members!member_under_elder_elder_id_fkey(id, name)
       )
     `)
     .order('name');

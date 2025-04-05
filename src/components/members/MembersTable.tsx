@@ -10,8 +10,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Mail, Phone, MapPin, User, Edit } from 'lucide-react';
+import { Mail, Phone, MapPin, User } from 'lucide-react';
 
 interface MembersTableProps {
   members: Member[];
@@ -45,13 +44,14 @@ const MembersTable: React.FC<MembersTableProps> = ({
           <TableHead>Address</TableHead>
           <TableHead>Status</TableHead>
           {!readOnly && <TableHead>Role</TableHead>}
-          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {members.map((member) => (
           <TableRow 
-            key={member.id}
+            key={member.id} 
+            className={`${!readOnly ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+            onClick={() => onMemberClick(member.id)}
           >
             <TableCell className="font-medium">
               {member.name || 'Unknown'}
@@ -100,16 +100,6 @@ const MembersTable: React.FC<MembersTableProps> = ({
                 </span>
               </TableCell>
             )}
-            <TableCell className="text-right">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => onMemberClick(member.id)}
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-            </TableCell>
           </TableRow>
         ))}
       </TableBody>
