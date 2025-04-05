@@ -57,6 +57,8 @@ const AddMemberForm: React.FC<AddMemberFormProps> = ({ onSuccess, onCancel }) =>
   const createMemberMutation = useMutation({
     mutationFn: (data: MemberFormValues) => createMember({
       ...data,
+      // Make sure name is always provided and not undefined
+      name: data.name,
       status: 'active'
     }),
     onSuccess: () => {
