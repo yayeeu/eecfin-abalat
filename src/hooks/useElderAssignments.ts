@@ -54,7 +54,8 @@ export const useElderAssignments = () => {
       const membersResult = await supabase
         .from("members")
         .select("id, name")
-        .neq("role_id", roleData.id);
+        .neq("role_id", roleData.id)
+        .eq("status", "active");
 
       if (membersResult.error) throw membersResult.error;
 
