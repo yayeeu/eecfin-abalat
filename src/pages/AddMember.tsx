@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -15,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { createMember, getMember, updateMember, getRoleByName } from '@/lib/memberService';
+import { createMember, getMember, updateMember } from '@/lib/memberService';
 import {
   Select,
   SelectContent,
@@ -25,7 +26,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { getAllRoles } from '@/lib/roleService';
+import { getAllRoles, getRoleByName } from '@/lib/services/roleService';
 import { Loader2 } from 'lucide-react';
 
 // Create form schema with proper type transformations
@@ -79,7 +80,7 @@ const AddMember = () => {
       status: 'active',
       is_baptised: false,
       has_letter_from_prev_church: false,
-      num_children: '0', // This is a string in the form that gets transformed to number
+      num_children: '0', // Keep as string in the form
     },
   });
 
@@ -143,10 +144,10 @@ const AddMember = () => {
       }
       
       // Transform data before sending to API
+      // num_children is automatically transformed to a number by zod
       const formattedData = {
         ...data,
         name: data.name,
-        // num_children is automatically transformed to a number by zod
       };
       
       if (memberId) {
