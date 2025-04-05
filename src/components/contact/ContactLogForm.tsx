@@ -1,13 +1,12 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { createContactLog } from '@/lib/contactLogService';
 import { useToast } from '@/hooks/use-toast';
 import { ContactLog } from '@/types/database.types';
-import { getMembersForDropdown } from '@/lib/memberService';
 
 import {
   Form,
@@ -21,7 +20,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
 
 // Update the form schema to use the correct contact type values
 const formSchema = z.object({
@@ -48,13 +46,6 @@ const ContactLogForm: React.FC<ContactLogFormProps> = ({
   onCancel 
 }) => {
   const { toast } = useToast();
-  
-  // Fetch members for dropdown
-  const { data: members, isLoading: isLoadingMembers } = useQuery({
-    queryKey: ['members-dropdown'],
-    queryFn: getMembersForDropdown,
-    enabled: !memberId // Only fetch if no memberId is provided
-  });
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -113,15 +104,6 @@ const ContactLogForm: React.FC<ContactLogFormProps> = ({
       onCancel();
     }
   };
-  
-  if (isLoadingMembers && !memberId) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-        <span>Loading member data...</span>
-      </div>
-    );
-  }
   
   return (
     <Form {...form}>
