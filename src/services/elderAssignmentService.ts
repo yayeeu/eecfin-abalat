@@ -9,7 +9,7 @@ export const updateMemberAssignment = async (
 ): Promise<void> => {
   // If moving to unassigned, just delete the assignment
   if (targetElderId === "unassigned") {
-    if (currentElderId !== "unassigned") {
+    if (currentElderId !== null && currentElderId !== "unassigned") {
       const { error } = await supabase
         .from("member_under_elder")
         .delete()
@@ -19,7 +19,7 @@ export const updateMemberAssignment = async (
     }
   } else {
     // Check if there's an existing assignment
-    if (currentElderId !== "unassigned") {
+    if (currentElderId !== null && currentElderId !== "unassigned") {
       // Update existing assignment
       const { error } = await supabase
         .from("member_under_elder")

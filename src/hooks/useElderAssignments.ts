@@ -15,7 +15,8 @@ export interface SimpleElder {
   name: string;
 }
 
-export type ElderAssignmentsMap = {[key: string]: string[]};
+// Use a simpler type definition to avoid excessive recursion
+export type ElderAssignmentsMap = Record<string, string[]>;
 
 export const useElderAssignments = () => {
   const [elders, setElders] = useState<SimpleElder[]>([]);
@@ -34,7 +35,7 @@ export const useElderAssignments = () => {
       const eldersResult = await supabase
         .from("members")
         .select("id, name")
-        .eq("role", "elder");
+        .eq("role_id", (await supabase.from("roles").select("id").eq("name", "elder").single()).data?.id);
 
       if (eldersResult.error) throw eldersResult.error;
 
@@ -42,7 +43,7 @@ export const useElderAssignments = () => {
       const membersResult = await supabase
         .from("members")
         .select("id, name, email")
-        .neq("role", "elder"); // Exclude elders from general members list
+        .neq("role_id", (await supabase.from("roles").select("id").eq("name", "elder").single()).data?.id);
 
       if (membersResult.error) throw membersResult.error;
 
