@@ -23,7 +23,7 @@ interface SimpleElder {
 const MemberManager: React.FC = () => {
   const [elders, setElders] = useState<SimpleElder[]>([]);
   const [members, setMembers] = useState<SimpleMember[]>([]);
-  const [elderAssignments, setElderAssignments] = useState<Record<string, string[]>>({
+  const [elderAssignments, setElderAssignments] = useState<{[key: string]: string[]}>({
     unassigned: [],
   });
   const { toast } = useToast();
@@ -65,7 +65,7 @@ const MemberManager: React.FC = () => {
       setMembers(membersResult.data || []);
 
       // Create initial assignments map
-      const assignments: Record<string, string[]> = { unassigned: [] };
+      const assignments: {[key: string]: string[]} = { unassigned: [] };
       
       // Initialize assignments for each elder
       eldersResult.data?.forEach((elder) => {
