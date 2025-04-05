@@ -102,7 +102,9 @@ const AddMember = () => {
             form.setValue('status', member.status || 'active');
             form.setValue('is_baptised', member.is_baptised || false);
             form.setValue('has_letter_from_prev_church', member.has_letter_from_prev_church || false);
-            form.setValue('num_children', member.num_children?.toString() || '');
+            
+            // Convert number to string for form input
+            form.setValue('num_children', member.num_children !== undefined ? member.num_children.toString() : '');
             
             // Fetch role by id and set the role name
             if (member.role_id) {
@@ -442,7 +444,6 @@ const AddMember = () => {
                         type="number" 
                         placeholder="0" 
                         {...field} 
-                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />
