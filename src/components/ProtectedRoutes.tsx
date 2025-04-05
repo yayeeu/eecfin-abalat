@@ -7,6 +7,7 @@ import Profile from "../pages/Profile";
 import AddMember from "../pages/AddMember";
 import NotFound from "../pages/NotFound";
 import ManageMembers from "../pages/ManageMembers";
+import ContactLogs from "../pages/ContactLogs";
 
 const ProtectedRoutes = () => {
   return (
@@ -18,6 +19,7 @@ const ProtectedRoutes = () => {
         <Route path="/admin/all-members" element={<Admin />} />
         <Route path="/admin/manage-members" element={<Admin />} />
         <Route path="/admin/manage-ministries" element={<Admin />} />
+        <Route path="/admin/contact-logs" element={<Admin />} />
         <Route path="/admin/add-member" element={<AddMember />} />
         <Route path="/admin/edit-member/:memberId" element={<AddMember />} />
         <Route path="/admin/profile" element={<Profile />} />

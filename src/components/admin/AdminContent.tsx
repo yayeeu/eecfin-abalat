@@ -4,6 +4,7 @@ import Dashboard from '@/components/Dashboard';
 import MinistryManager from '@/components/MinistryManager';
 import AllMembersList from '@/components/AllMembersList';
 import ManageMembers from '@/pages/ManageMembers';
+import ContactLogs from '@/pages/ContactLogs';
 
 interface AdminContentProps {
   activeSection: string;
@@ -16,6 +17,7 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
       case 'ministries': return 'Manage Ministries';
       case 'members': return 'All Church Members';
       case 'manage-members': return 'Manage Member Assignments';
+      case 'contact-logs': return 'Contact Logs';
       default: return '';
     }
   };
@@ -30,6 +32,8 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
         return 'View all church members, search/filter, and edit their information.';
       case 'manage-members':
         return 'Assign members to elders via drag and drop interface.';
+      case 'contact-logs':
+        return 'View and manage all elder-member contact history.';
       default: 
         return '';
     }
@@ -52,6 +56,7 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
         <AllMembersList onMemberSelect={(id) => console.log(`Selected member: ${id}`)} />
       )}
       {activeSection === 'manage-members' && <ManageMembers />}
+      {activeSection === 'contact-logs' && <ContactLogs />}
     </div>
   );
 };

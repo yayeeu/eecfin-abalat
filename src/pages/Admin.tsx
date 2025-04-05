@@ -21,6 +21,8 @@ const Admin: React.FC = () => {
       setActiveSection('manage-members');
     } else if (path === '/admin/manage-ministries') {
       setActiveSection('ministries');
+    } else if (path === '/admin/contact-logs') {
+      setActiveSection('contact-logs');
     }
   }, [location.pathname]);
 
