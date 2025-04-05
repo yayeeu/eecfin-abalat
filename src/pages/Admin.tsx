@@ -1,36 +1,37 @@
 
-import React, { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserRole } from '@/types/auth.types';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminContent from '@/components/admin/AdminContent';
 
-interface AdminProps {
-  activeSection?: string;
-}
-
-const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
-  const [activeSectionState, setActiveSection] = useState<string>(activeSection);
+const Admin: React.FC = () => {
+  const [activeSection, setActiveSection] = useState<string>('dashboard');
   const navigate = useNavigate();
+  const location = useLocation();
   const { userRole } = useAuth();
 
-  const handleMenuClick = (id: string) => {
-    // Check if user has access to this section
-    if (userRole && (userRole === 'admin' || sectionAccess[id]?.includes(userRole))) {
-      setActiveSection(id);
+  // Update active section based on URL path
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/admin' || path === '/admin/dashboard') {
+      setActiveSection('dashboard');
+    } else if (path === '/admin/manage-members') {
+      setActiveSection('manage_members');
+    } else if (path === '/admin/all-members') {
+      setActiveSection('members');
+    } else if (path === '/admin/manage-ministries') {
+      setActiveSection('ministries');
     }
-  };
+  }, [location.pathname]);
 
-  // Define which roles can access which sections based on requirements
-  const sectionAccess: Record<string, UserRole[]> = {
+  // Define which roles can access which sections
+  const sectionAccess: Record<string, string[]> = {
     dashboard: ['admin', 'elder'],
     ministries: ['admin'],
     members: ['admin', 'elder'],
-    elders: ['admin', 'elder'],
-    events: ['admin'],
     manage_members: ['admin', 'elder'],
   };
 
@@ -53,7 +54,7 @@ const Admin: React.FC<AdminProps> = ({ activeSection = 'dashboard' }) => {
 
             {/* Content Component */}
             <AdminContent 
-              activeSection={activeSectionState}
+              activeSection={activeSection}
             />
           </div>
         </div>

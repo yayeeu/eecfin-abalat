@@ -1,12 +1,11 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import RoleGuard from '@/components/auth/RoleGuard';
 import Dashboard from '@/components/Dashboard';
-import SliderManager from '@/components/slider/SliderManager';
 import MinistryManager from '@/components/MinistryManager';
 import MemberManager from '@/components/MemberManager';
-import ElderManager from '@/components/ElderManager';
+import AllMembersList from '@/components/AllMembersList';
 
 interface AdminContentProps {
   activeSection: string;
@@ -18,8 +17,7 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
       case 'dashboard': return 'Church Dashboard';
       case 'ministries': return 'Manage Ministries';
       case 'members': return 'All Church Members';
-      case 'elders': return 'Church Elders';
-      case 'events': return 'Manage Events';
+      case 'manage_members': return 'Manage Member Assignments';
       default: return '';
     }
   };
@@ -31,11 +29,9 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
       case 'ministries': 
         return 'Add, edit, or delete ministry information displayed on the Get Involved page.';
       case 'members': 
-        return 'View all church members and their assigned roles.';
-      case 'elders': 
-        return 'View and manage church elders.';
-      case 'events': 
-        return 'Manage church events calendar and announcements.';
+        return 'View all church members, search/filter, and edit their information.';
+      case 'manage_members': 
+        return 'Assign members to elders using drag and drop functionality.';
       default: 
         return '';
     }
@@ -64,20 +60,12 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
       )}
       {activeSection === 'members' && (
         <RoleGuard allowedRoles={['admin', 'elder']}>
-          <MemberManager />
+          <AllMembersList onMemberSelect={(id) => console.log(`Selected member: ${id}`)} />
         </RoleGuard>
       )}
-      {activeSection === 'elders' && (
+      {activeSection === 'manage_members' && (
         <RoleGuard allowedRoles={['admin', 'elder']}>
-          <ElderManager />
-        </RoleGuard>
-      )}
-      {activeSection === 'events' && (
-        <RoleGuard allowedRoles={['admin']}>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Events Management</h2>
-            <p>Event management will be implemented soon.</p>
-          </div>
+          <MemberManager />
         </RoleGuard>
       )}
     </div>

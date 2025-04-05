@@ -14,9 +14,7 @@ import {
 import { 
   Users, 
   LayoutDashboard, 
-  BookOpen, 
-  Church, 
-  Calendar
+  BookOpen
 } from "lucide-react";
 import RoleGuard from "@/components/auth/RoleGuard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,7 +34,7 @@ const AdminSidebar: React.FC = () => {
           <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem className={isActive("/admin") ? "active" : ""}>
+              <SidebarMenuItem className={isActive("/admin") || isActive("/admin/dashboard") ? "active" : ""}>
                 <SidebarMenuButton asChild>
                   <Link to="/admin">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -53,9 +51,9 @@ const AdminSidebar: React.FC = () => {
             <SidebarGroupLabel>Members</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem className={isActive("/manage-members") ? "active" : ""}>
+                <SidebarMenuItem className={isActive("/admin/manage-members") ? "active" : ""}>
                   <SidebarMenuButton asChild>
-                    <Link to="/manage-members">
+                    <Link to="/admin/manage-members">
                       <Users className="mr-2 h-4 w-4" />
                       <span>Manage Members</span>
                     </Link>
@@ -67,15 +65,6 @@ const AdminSidebar: React.FC = () => {
                     <Link to="/admin/all-members">
                       <Users className="mr-2 h-4 w-4" />
                       <span>All Members</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-
-                <SidebarMenuItem className={isActive("/admin/manage-elders") ? "active" : ""}>
-                  <SidebarMenuButton asChild>
-                    <Link to="/admin/manage-elders">
-                      <Church className="mr-2 h-4 w-4" />
-                      <span>Manage Elders</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -94,15 +83,6 @@ const AdminSidebar: React.FC = () => {
                     <Link to="/admin/manage-ministries">
                       <BookOpen className="mr-2 h-4 w-4" />
                       <span>Manage Ministries</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-
-                <SidebarMenuItem className={isActive("/admin/manage-events") ? "active" : ""}>
-                  <SidebarMenuButton asChild>
-                    <Link to="/admin/manage-events">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      <span>Manage Events</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -1,10 +1,7 @@
 
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import AuthRoute from "./AuthRoute";
-import CustomLayout from "./CustomLayout";
-
-// Admin pages
 import Admin from "../pages/Admin";
 import Profile from "../pages/Profile";
 import ManageMembers from "../pages/ManageMembers";
@@ -14,8 +11,12 @@ const ProtectedRoutes = () => {
   return (
     <AuthRoute>
       <Routes>
-        <Route path="/" element={<Admin />} />
-        <Route path="/admin/*" element={<Admin />} />
+        <Route path="/" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/dashboard" element={<Admin />} />
+        <Route path="/admin/manage-members" element={<Admin />} />
+        <Route path="/admin/all-members" element={<Admin />} />
+        <Route path="/admin/manage-ministries" element={<Admin />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/manage-members" element={<ManageMembers />} />
         <Route path="*" element={<NotFound />} />
