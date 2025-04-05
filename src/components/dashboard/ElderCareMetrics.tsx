@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Member, ContactLog } from '@/types/database.types';
 import { Users, User, Calendar, Clock, Phone, Mail, MessageSquare, Users2 } from 'lucide-react';
@@ -28,11 +27,9 @@ const ElderCareMetrics: React.FC<{
   contactLogs,
   elderId
 }) => {
-  // Fetch member types from database
   const { data: memberTypes = [], isLoading } = useQuery({
     queryKey: ['memberTypesForElder', elderId],
     queryFn: async () => {
-      // Get all member types
       const { data: types, error: typesError } = await supabase
         .from('member_type')
         .select('id, name');
@@ -42,7 +39,6 @@ const ElderCareMetrics: React.FC<{
         return [];
       }
       
-      // Calculate counts for each member type
       return types.map(type => {
         const count = members.filter(m => m.member_type_id === type.id).length;
         return { ...type, count };
@@ -50,17 +46,14 @@ const ElderCareMetrics: React.FC<{
     },
   });
   
-  // Calculate total members assigned to the elder
   const totalAssignedMembers = members.length;
   
-  // Calculate contact log periods
   const now = new Date();
   const thisWeekStart = startOfWeek(now);
   const thisWeekEnd = endOfWeek(now);
   const lastWeekStart = startOfWeek(subWeeks(now, 1));
   const lastWeekEnd = endOfWeek(subWeeks(now, 1));
   
-  // Filter logs for each period
   const thisWeekLogs = contactLogs.filter(log => {
     const logDate = new Date(log.created_at || '');
     return isWithinInterval(logDate, { start: thisWeekStart, end: thisWeekEnd });
@@ -71,7 +64,6 @@ const ElderCareMetrics: React.FC<{
     return isWithinInterval(logDate, { start: lastWeekStart, end: lastWeekEnd });
   });
 
-  // Process logs by member type
   const getLogsByMemberType = (logs: ContactLog[]) => {
     const countByType: Record<string, number> = {};
     
@@ -90,7 +82,6 @@ const ElderCareMetrics: React.FC<{
     }));
   };
   
-  // Process logs by contact type
   const getLogsByContactType = (logs: ContactLog[]) => {
     const countByType: Record<string, number> = {};
     
@@ -103,15 +94,12 @@ const ElderCareMetrics: React.FC<{
     return Object.entries(countByType).map(([type, count]) => ({ type, count }));
   };
   
-  // Get logs by member type for each period
   const thisWeekByMemberType = getLogsByMemberType(thisWeekLogs);
   const lastWeekByMemberType = getLogsByMemberType(lastWeekLogs);
   
-  // Get logs by contact type for each period
   const thisWeekByContactType = getLogsByContactType(thisWeekLogs);
   const lastWeekByContactType = getLogsByContactType(lastWeekLogs);
   
-  // Contact types with corresponding icons
   const contactTypeIcons: Record<string, React.ElementType> = {
     'Phone Call': Phone,
     'Text Message': MessageSquare,
@@ -119,7 +107,6 @@ const ElderCareMetrics: React.FC<{
     'In Person': Users2,
   };
   
-  // Generate an array of colors for member types
   const typeColors = [
     'bg-blue-100 text-blue-700',
     'bg-amber-100 text-amber-700',
@@ -131,6 +118,34 @@ const ElderCareMetrics: React.FC<{
     'bg-violet-100 text-violet-700',
   ];
   
+  const { data: allContactLogs = [], isLoading: allLogsLoading } = useQuery({
+    queryKey: ['allContactLogs'],
+    queryFn: async () => {
+      if (!supabase) {
+        return contactLogs;
+      }
+      
+      const { data, error } = await supabase
+        .from('contact_log')
+        .select(`
+          *,
+          elder:members!contact_log_elder_id_fkey(id, name),
+          member:members!contact_log_member_id_fkey(id, name)
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching all contact logs:', error);
+        return [];
+      }
+      
+      return data as ContactLog[];
+    },
+  });
+  
+  const allLogsByMemberType = getLogsByMemberType(allContactLogs);
+  const allLogsByContactType = getLogsByContactType(allContactLogs);
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
@@ -139,7 +154,6 @@ const ElderCareMetrics: React.FC<{
           <div className="text-sm font-medium">Total Members Assigned</div>
         </div>
         
-        {/* Member Types Section */}
         <div>
           <h3 className="text-sm font-medium text-gray-700 mb-2">Members by Type</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -163,15 +177,12 @@ const ElderCareMetrics: React.FC<{
         </div>
       </div>
       
-      {/* Contact Log Activity Section */}
       <div className="mt-6">
         <h3 className="text-sm font-medium text-gray-700 mb-2">My Recent Activity</h3>
         <div className="grid grid-cols-2 gap-3">
-          {/* This Week Section */}
           <div className="rounded-lg border border-gray-200 p-4">
             <h4 className="text-center font-medium mb-3 bg-green-100 text-green-700 py-1 rounded">This Week</h4>
             <div className="space-y-4">
-              {/* By Member Type */}
               <div>
                 <h5 className="text-xs font-medium text-gray-500 mb-2">By Member Type</h5>
                 <div className="grid grid-cols-2 gap-2">
@@ -193,7 +204,6 @@ const ElderCareMetrics: React.FC<{
                 </div>
               </div>
               
-              {/* By Contact Type */}
               <div>
                 <h5 className="text-xs font-medium text-gray-500 mb-2">By Contact Type</h5>
                 <div className="grid grid-cols-2 gap-2">
@@ -219,11 +229,9 @@ const ElderCareMetrics: React.FC<{
             </div>
           </div>
           
-          {/* Last Week Section */}
           <div className="rounded-lg border border-gray-200 p-4">
             <h4 className="text-center font-medium mb-3 bg-blue-100 text-blue-700 py-1 rounded">Last Week</h4>
             <div className="space-y-4">
-              {/* By Member Type */}
               <div>
                 <h5 className="text-xs font-medium text-gray-500 mb-2">By Member Type</h5>
                 <div className="grid grid-cols-2 gap-2">
@@ -245,7 +253,6 @@ const ElderCareMetrics: React.FC<{
                 </div>
               </div>
               
-              {/* By Contact Type */}
               <div>
                 <h5 className="text-xs font-medium text-gray-500 mb-2">By Contact Type</h5>
                 <div className="grid grid-cols-2 gap-2">
@@ -267,6 +274,61 @@ const ElderCareMetrics: React.FC<{
                     })
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">All Activities</h3>
+        <div className="rounded-lg border border-gray-200 p-4">
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-center font-medium mb-3 bg-purple-100 text-purple-700 py-1 rounded">By Member Type</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {allLogsLoading ? (
+                  <div className="col-span-2 text-center py-2 text-xs text-gray-400">Loading...</div>
+                ) : allLogsByMemberType.length === 0 ? (
+                  <div className="col-span-2 text-center py-2 text-xs text-gray-400">No contact logs</div>
+                ) : (
+                  allLogsByMemberType.map((item, index) => (
+                    item.logCount > 0 && (
+                      <div 
+                        key={`all-${item.id}`} 
+                        className={`rounded-lg p-2 ${typeColors[index % typeColors.length]} flex flex-col items-center justify-center text-center`}
+                      >
+                        <div className="text-sm font-bold">{item.logCount}</div>
+                        <div className="text-xs">{item.name || 'Unnamed'}</div>
+                      </div>
+                    )
+                  ))
+                )}
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-center font-medium mb-3 bg-purple-100 text-purple-700 py-1 rounded">By Contact Type</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {allLogsLoading ? (
+                  <div className="col-span-2 text-center py-2 text-xs text-gray-400">Loading...</div>
+                ) : allLogsByContactType.length === 0 ? (
+                  <div className="col-span-2 text-center py-2 text-xs text-gray-400">No contact logs</div>
+                ) : (
+                  allLogsByContactType.map((item, index) => {
+                    const IconComponent = contactTypeIcons[item.type] || MessageSquare;
+                    return (
+                      <div 
+                        key={`all-${item.type}`} 
+                        className="rounded-lg p-2 bg-gray-100 flex flex-col items-center justify-center text-center"
+                      >
+                        <IconComponent className="h-3 w-3 mb-1" />
+                        <div className="text-sm font-bold">{item.count}</div>
+                        <div className="text-xs">{item.type}</div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
