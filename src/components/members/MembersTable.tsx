@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Member } from '@/types/database.types';
 import { 
   Table, 
@@ -10,8 +10,10 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, User, Info, Edit } from 'lucide-react';
+import { Mail, Phone, MapPin, User, Info, Edit, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ContactLogForm from '@/components/contact/ContactLogForm';
 
 interface MembersTableProps {
   members: Member[];
@@ -30,6 +32,22 @@ const MembersTable: React.FC<MembersTableProps> = ({
 }) => {
   // Log the members data to see what we're working with
   console.log(`MembersTable rendering ${members.length} members:`, members);
+  
+  // State for contact log dialog
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+
+  // Handle opening the contact log form for a member
+  const handleAddFollowUp = (memberId: string) => {
+    setSelectedMemberId(memberId);
+    setIsFormOpen(true);
+  };
+
+  // Handle closing the contact log form
+  const handleCloseContactForm = () => {
+    setIsFormOpen(false);
+    setSelectedMemberId(null);
+  };
 
   if (!members || members.length === 0) {
     return (
@@ -44,98 +62,128 @@ const MembersTable: React.FC<MembersTableProps> = ({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Contact</TableHead>
-          <TableHead>Address</TableHead>
-          <TableHead>Status</TableHead>
-          {!readOnly && <TableHead>Member Type</TableHead>}
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {members.map((member) => (
-          <TableRow 
-            key={member.id}
-          >
-            <TableCell className="font-medium">
-              {member.name || 'Unknown'}
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col space-y-1">
-                {member.phone ? (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Contact</TableHead>
+            <TableHead>Address</TableHead>
+            <TableHead>Status</TableHead>
+            {!readOnly && <TableHead>Member Type</TableHead>}
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {members.map((member) => (
+            <TableRow 
+              key={member.id}
+            >
+              <TableCell className="font-medium">
+                {member.name || 'Unknown'}
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-col space-y-1">
+                  {member.phone ? (
+                    <div className="flex items-center">
+                      <Phone className="h-4 w-4 mr-1" />
+                      <span className="text-sm">{member.phone}</span>
+                    </div>
+                  ) : member.email ? (
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 mr-1" />
+                      <span className="text-sm">{member.email}</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400 text-sm">No contact info</span>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell>
+                {member.address ? (
                   <div className="flex items-center">
-                    <Phone className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{member.phone}</span>
-                  </div>
-                ) : member.email ? (
-                  <div className="flex items-center">
-                    <Mail className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{member.email}</span>
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span className="text-sm truncate max-w-[200px]">{member.address}</span>
                   </div>
                 ) : (
-                  <span className="text-gray-400 text-sm">No contact info</span>
+                  <span className="text-gray-400 text-sm">No address</span>
                 )}
-              </div>
-            </TableCell>
-            <TableCell>
-              {member.address ? (
-                <div className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  <span className="text-sm truncate max-w-[200px]">{member.address}</span>
-                </div>
-              ) : (
-                <span className="text-gray-400 text-sm">No address</span>
-              )}
-            </TableCell>
-            <TableCell>
-              <Badge 
-                variant={
-                  member.status === 'active' ? 'success' : 
-                  member.status === 'inactive' ? 'secondary' : 
-                  'outline'
-                }
-              >
-                {member.status || 'Unknown'}
-              </Badge>
-            </TableCell>
-            {!readOnly && (
-              <TableCell>
-                <span className="text-sm">
-                  {member.roles?.name || member.role || 'Regular Member'}
-                </span>
               </TableCell>
-            )}
-            <TableCell>
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onViewDetails(member)} 
-                  className="flex items-center"
+              <TableCell>
+                <Badge 
+                  variant={
+                    member.status === 'active' ? 'success' : 
+                    member.status === 'inactive' ? 'secondary' : 
+                    'outline'
+                  }
                 >
-                  <Info className="h-4 w-4 mr-1" />
-                  Details
-                </Button>
-                {!readOnly && (
+                  {member.status || 'Unknown'}
+                </Badge>
+              </TableCell>
+              {!readOnly && (
+                <TableCell>
+                  <span className="text-sm">
+                    {member.roles?.name || member.role || 'Regular Member'}
+                  </span>
+                </TableCell>
+              )}
+              <TableCell>
+                <div className="flex flex-wrap gap-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => onEditMember(member.id)} 
+                    onClick={() => onViewDetails(member)} 
                     className="flex items-center"
                   >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
+                    <Info className="h-4 w-4 mr-1" />
+                    Details
                   </Button>
-                )}
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                  {!readOnly && (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => onEditMember(member.id)} 
+                        className="flex items-center"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleAddFollowUp(member.id)} 
+                        className="flex items-center"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Add Follow up
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      {/* Contact Log Form Dialog */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Follow up</DialogTitle>
+          </DialogHeader>
+          
+          {selectedMemberId && (
+            <ContactLogForm
+              memberId={selectedMemberId}
+              onSuccess={handleCloseContactForm}
+              onCancel={handleCloseContactForm}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

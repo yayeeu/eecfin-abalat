@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -49,6 +49,20 @@ const ContactLogForm: React.FC<ContactLogFormProps> = ({
       member_id: memberId || ''
     }
   });
+
+  // Set the selected member ID when it changes from props
+  useEffect(() => {
+    if (memberId) {
+      setValue('member_id', memberId);
+    }
+  }, [memberId, setValue]);
+
+  // Set the selected elder ID when it changes from props
+  useEffect(() => {
+    if (elderId) {
+      setValue('elder_id', elderId);
+    }
+  }, [elderId, setValue]);
 
   const contactType = watch('contact_type');
   const selectedElderId = watch('elder_id');
