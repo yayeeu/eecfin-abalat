@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -54,7 +53,9 @@ const memberSchema = z.object({
   status: z.string().optional(),
   is_baptised: z.boolean().optional(),
   has_letter_from_prev_church: z.boolean().optional(),
-  num_children: z.string().optional().transform(val => val ? parseInt(val, 10) : 0),
+  num_children: z.string().optional()
+    .transform(val => val === '' ? 0 : parseInt(val, 10))
+    .pipe(z.number().min(0).optional()),
 });
 
 type MemberFormValues = z.infer<typeof memberSchema>;
@@ -124,7 +125,7 @@ const AddMember = () => {
         status: member.status || 'active',
         is_baptised: member.is_baptised || false,
         has_letter_from_prev_church: member.has_letter_from_prev_church || false,
-        num_children: member.num_children?.toString() || '0',
+        num_children: member.num_children !== undefined ? member.num_children.toString() : '0',
       });
     }
   }, [member, memberLoading, form]);
