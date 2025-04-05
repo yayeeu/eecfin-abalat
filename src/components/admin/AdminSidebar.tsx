@@ -15,7 +15,8 @@ import {
   Users, 
   LayoutDashboard, 
   BookOpen,
-  UserCircle
+  UserCircle,
+  Flag
 } from "lucide-react";
 
 const AdminSidebar: React.FC = () => {
@@ -61,6 +62,14 @@ const AdminSidebar: React.FC = () => {
                   <Link to="/admin/all-members">
                     <Users className="mr-2 h-4 w-4" />
                     <span>All Members</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem className={isActive("/follow-ups") ? "active" : ""}>
+                <SidebarMenuButton asChild>
+                  <Link to="/follow-ups">
+                    <Flag className="mr-2 h-4 w-4" />
+                    <span>Follow Ups</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
