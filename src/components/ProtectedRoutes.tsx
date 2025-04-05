@@ -6,7 +6,7 @@ import Admin from "../pages/Admin";
 import Profile from "../pages/Profile";
 import AddMember from "../pages/AddMember";
 import NotFound from "../pages/NotFound";
-import ManageMembers from "../pages/ManageMembers";
+import FollowUps from "../pages/FollowUps";
 
 const ProtectedRoutes = () => {
   return (
@@ -21,6 +21,7 @@ const ProtectedRoutes = () => {
         <Route path="/admin/add-member" element={<AddMember />} />
         <Route path="/admin/edit-member/:memberId" element={<AddMember />} />
         <Route path="/admin/profile" element={<Profile />} />
+        <Route path="/follow-ups" element={<FollowUps />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthRoute>

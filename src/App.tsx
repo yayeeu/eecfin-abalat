@@ -14,7 +14,6 @@ import RoleGuard from "@/components/auth/RoleGuard";
 // Lazy-loaded components for better initial loading performance
 const Admin = lazy(() => import("./pages/Admin"));
 const Auth = lazy(() => import("./pages/Auth"));
-const FollowUps = lazy(() => import("./pages/FollowUps"));
 
 // Configure the query client with performance optimizations
 const queryClient = new QueryClient({
@@ -69,14 +68,14 @@ const App = () => (
               } 
             />
 
-            {/* Follow Ups Route */}
+            {/* Protected routes now handled by ProtectedRoutes component */}
             <Route 
-              path="/follow-ups" 
+              path="/*" 
               element={
                 <RoleGuard>
                   <Layout>
                     <Suspense fallback={<PageLoader />}>
-                      <FollowUps />
+                      <React.lazy(() => import('./components/ProtectedRoutes'))} />
                     </Suspense>
                   </Layout>
                 </RoleGuard>
