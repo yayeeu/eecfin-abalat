@@ -3,7 +3,7 @@ import React from 'react';
 import { useDrag } from 'react-dnd';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { User, Mail, Phone, GripVertical } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SimpleMember } from '@/hooks/useElderAssignments';
 
@@ -37,13 +37,6 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, currentElderId }) => {
         
         <div className="flex-1 min-w-0">
           <div className="font-medium truncate">{member.name || "Unnamed Member"}</div>
-          
-          {member.email && (
-            <div className="flex items-center gap-1 truncate text-sm text-gray-500">
-              <Mail className="h-3 w-3" />
-              <span className="truncate">{member.email}</span>
-            </div>
-          )}
         </div>
         
         <Badge variant="outline" className="ml-2">

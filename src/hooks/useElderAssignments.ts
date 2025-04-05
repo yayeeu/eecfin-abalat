@@ -32,18 +32,29 @@ export const useElderAssignments = () => {
       setLoading(true);
       
       // Fetch all members with elder role using a specific query
+      const { data: roleData } = await supabase
+        .from("roles")
+        .select("id")
+        .eq("name", "elder")
+        .single();
+
+      if (!roleData) {
+        throw new Error("Elder role not found");
+      }
+
       const eldersResult = await supabase
         .from("members")
         .select("id, name")
-        .eq("role_id", (await supabase.from("roles").select("id").eq("name", "elder").single()).data?.id);
+        .eq("role_id", roleData.id)
+        .eq("status", "active");
 
       if (eldersResult.error) throw eldersResult.error;
 
       // Fetch all regular members (non-elders)
       const membersResult = await supabase
         .from("members")
-        .select("id, name, email")
-        .neq("role_id", (await supabase.from("roles").select("id").eq("name", "elder").single()).data?.id);
+        .select("id, name")
+        .neq("role_id", roleData.id);
 
       if (membersResult.error) throw membersResult.error;
 
