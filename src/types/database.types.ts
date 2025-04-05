@@ -94,6 +94,9 @@ export interface Member {
   assigned_elder?: MemberUnderElder;
   // Ministry assignments
   ministry_assignments?: MemberMinistry[];
+  // Add the missing properties that are causing TypeScript errors
+  flagged?: boolean;
+  assigned_to_current_user?: boolean;
 }
 
 export interface Database {
