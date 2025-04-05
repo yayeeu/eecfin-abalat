@@ -23,7 +23,10 @@ const MembersTable: React.FC<MembersTableProps> = ({
   onMemberClick,
   readOnly = false
 }) => {
-  if (members.length === 0) {
+  // Log the members data to see what we're working with
+  console.log(`MembersTable rendering ${members.length} members:`, members);
+
+  if (!members || members.length === 0) {
     return (
       <div className="p-8 text-center">
         <User className="h-12 w-12 mx-auto text-gray-400" />
@@ -34,9 +37,6 @@ const MembersTable: React.FC<MembersTableProps> = ({
       </div>
     );
   }
-
-  // Debug log to show how many members are being passed to the component
-  console.log(`MembersTable rendering ${members.length} members:`, members);
 
   return (
     <Table>
