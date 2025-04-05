@@ -30,11 +30,12 @@ const MemberManager: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [toast]);
+  }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+      
       // Fetch all members with elder role
       const { data: eldersData, error: eldersError } = await supabase
         .from("members")
