@@ -13,11 +13,13 @@ import { useToast } from '@/hooks/use-toast';
 interface MemberMinistryAssignmentsProps {
   member: Member;
   readOnly?: boolean;
+  onAssignmentChanged?: () => void;
 }
 
 const MemberMinistryAssignments: React.FC<MemberMinistryAssignmentsProps> = ({ 
   member, 
-  readOnly = false 
+  readOnly = false,
+  onAssignmentChanged
 }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -71,6 +73,9 @@ const MemberMinistryAssignments: React.FC<MemberMinistryAssignmentsProps> = ({
         title: 'Ministry assigned',
         description: 'The member has been assigned to this ministry.'
       });
+      if (onAssignmentChanged) {
+        onAssignmentChanged();
+      }
     },
     onError: (error: any) => {
       toast({
@@ -89,6 +94,9 @@ const MemberMinistryAssignments: React.FC<MemberMinistryAssignmentsProps> = ({
         title: 'Ministry removed',
         description: 'The member has been removed from this ministry.'
       });
+      if (onAssignmentChanged) {
+        onAssignmentChanged();
+      }
     },
     onError: (error: any) => {
       toast({

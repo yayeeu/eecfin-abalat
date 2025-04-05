@@ -29,13 +29,15 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
   } = useQuery({
     queryKey: ['members'],
     queryFn: getAllMembers,
-    onError: (error) => {
-      console.error('Error fetching members:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load members data. Please try again.',
-        variant: 'destructive',
-      });
+    meta: {
+      onError: (error: any) => {
+        console.error('Error fetching members:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load members data. Please try again.',
+          variant: 'destructive',
+        });
+      }
     }
   });
 

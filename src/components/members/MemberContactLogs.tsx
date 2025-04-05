@@ -11,9 +11,10 @@ import ElderAssignmentSelect from './ElderAssignmentSelect';
 
 interface MemberContactLogsProps {
   memberId: string;
+  onLogAdded?: () => void;
 }
 
-const MemberContactLogs: React.FC<MemberContactLogsProps> = ({ memberId }) => {
+const MemberContactLogs: React.FC<MemberContactLogsProps> = ({ memberId, onLogAdded }) => {
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -31,6 +32,9 @@ const MemberContactLogs: React.FC<MemberContactLogsProps> = ({ memberId }) => {
         title: 'Refreshed',
         description: 'Contact logs have been refreshed',
       });
+      if (onLogAdded) {
+        onLogAdded();
+      }
     } catch (error) {
       toast({
         title: 'Error',

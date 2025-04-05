@@ -23,7 +23,7 @@ const MemberContentSection: React.FC<MemberContentSectionProps> = ({ member, onD
       <TabsContent value="ministries" className="space-y-4">
         <MemberMinistryAssignments 
           member={member} 
-          onAssignmentChanged={onDataChange}
+          readOnly={false}
         />
       </TabsContent>
       
@@ -43,8 +43,7 @@ const MemberContentSection: React.FC<MemberContentSectionProps> = ({ member, onD
       
       <TabsContent value="contact" className="space-y-4">
         <MemberContactLogs 
-          member={member}
-          onLogAdded={onDataChange}
+          memberId={member.id}
         />
       </TabsContent>
     </Tabs>
