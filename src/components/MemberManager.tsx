@@ -71,6 +71,10 @@ const MemberManager: React.FC = () => {
 
       console.log("Fetched members:", membersResult.data?.length || 0, "members");
 
+      // Ensure the data matches our type definition
+      const typedMembers = membersResult.data?.map(member => member as Member) || [];
+      setMembers(typedMembers);
+      
       // Fetch current elder assignments
       const assignmentsResult = await supabase
         .from("member_under_elder")
@@ -84,7 +88,6 @@ const MemberManager: React.FC = () => {
       // Process the data
       const eldersData = eldersResult.data || [];
       setElders(eldersData);
-      setMembers(membersResult.data || []);
 
       // Create initial assignments map
       const assignments: ElderAssignmentsMap = { unassigned: [] };
@@ -106,7 +109,7 @@ const MemberManager: React.FC = () => {
       const assignedMemberIds = assignmentsResult.data?.map(a => a.member_id) || [];
       
       // Regular members are those who are not elders
-      const regularMembers = membersResult.data?.filter(
+      const regularMembers = typedMembers.filter(
         member => !elderIds.includes(member.id)
       ) || [];
       

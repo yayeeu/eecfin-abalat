@@ -1,3 +1,4 @@
+
 export interface Slide {
   id: string;
   created_at?: string;
@@ -16,7 +17,7 @@ export interface Ministry {
   contact_name: string;
   contact_email: string;
   contact_phone?: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | string;
   photo?: string;
   contact_person_id?: string;
   contact_elder?: Member;
@@ -25,7 +26,7 @@ export interface Ministry {
 export interface Role {
   id: string;
   created_at: string;
-  name: 'admin' | 'it' | 'member' | 'elder' | 'volunteer';
+  name: 'admin' | 'it' | 'member' | 'elder' | 'volunteer' | string;
 }
 
 export interface MemberUnderElder {
@@ -48,7 +49,7 @@ export interface ContactLog {
   id: string;
   created_at?: string;
   updated_at?: string;
-  contact_type: 'Text Message' | 'In Person' | 'Phone Call' | 'Email' | 'Other';
+  contact_type: 'Text Message' | 'In Person' | 'Phone Call' | 'Email' | 'Other' | string;
   elder_id: string;
   member_id: string;
   notes?: string;
@@ -67,7 +68,7 @@ export interface Member {
   city?: string;
   postal_code?: string;
   image?: string;
-  role?: 'admin' | 'it' | 'member' | 'elder' | 'volunteer';
+  role?: 'admin' | 'it' | 'member' | 'elder' | 'volunteer' | string;
   role_id?: string;
   ministry_id?: string;
   // Fields from database
@@ -79,7 +80,7 @@ export interface Member {
   role_in_previous_church?: string;
   emergency_contact?: string;
   has_letter_from_prev_church?: boolean;
-  status?: 'active' | 'inactive';
+  status?: 'active' | 'inactive' | string; // Updated to accept any string value
   // New fields
   is_baptised?: boolean;
   num_children?: number;
