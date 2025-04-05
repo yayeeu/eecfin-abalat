@@ -93,6 +93,24 @@ export type Database = {
           },
         ]
       }
+      member_type: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
       member_under_elder: {
         Row: {
           created_at: string | null
@@ -145,6 +163,7 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           marital_status: string | null
+          member_type_id: string | null
           ministry_id: string | null
           name: string | null
           num_children: number | null
@@ -171,6 +190,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           marital_status?: string | null
+          member_type_id?: string | null
           ministry_id?: string | null
           name?: string | null
           num_children?: number | null
@@ -197,6 +217,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           marital_status?: string | null
+          member_type_id?: string | null
           ministry_id?: string | null
           name?: string | null
           num_children?: number | null
@@ -209,6 +230,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "members_member_type_id_fkey"
+            columns: ["member_type_id"]
+            isOneToOne: false
+            referencedRelation: "member_type"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "members_ministry_id_fkey"
             columns: ["ministry_id"]

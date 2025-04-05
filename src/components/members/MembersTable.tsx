@@ -51,7 +51,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
           <TableHead>Contact</TableHead>
           <TableHead>Address</TableHead>
           <TableHead>Status</TableHead>
-          {!readOnly && <TableHead>Role</TableHead>}
+          {!readOnly && <TableHead>Member Type</TableHead>}
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
