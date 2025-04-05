@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllMembers } from '@/lib/memberService';
 import { useToast } from '@/hooks/use-toast';
-import { TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { Member } from '@/types/database.types';
 import AddMemberDialog from '@/components/members/AddMemberDialog';
@@ -134,56 +134,58 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
         </div>
       </div>
 
-      {/* Category tabs */}
-      <FilterTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Wrap FilterTabs and TabsContent in a Tabs component */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <FilterTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <TabsContent value="all" className="mt-0">
-        <MembersListContent
-          isLoading={isLoading}
-          filteredMembers={filteredMembers}
-          viewMode={viewMode}
-          onMemberClick={handleMemberClick}
-          onViewDetails={handleViewDetails}
-          onEditMember={handleEditMember}
-          readOnly={readOnly}
-          refetch={refetch}
-          isError={isError}
-          totalCount={members.length}
-          activeTabLabel={getActiveTabLabel()}
-        />
-      </TabsContent>
+        <TabsContent value="all" className="mt-0">
+          <MembersListContent
+            isLoading={isLoading}
+            filteredMembers={filteredMembers}
+            viewMode={viewMode}
+            onMemberClick={handleMemberClick}
+            onViewDetails={handleViewDetails}
+            onEditMember={handleEditMember}
+            readOnly={readOnly}
+            refetch={refetch}
+            isError={isError}
+            totalCount={members.length}
+            activeTabLabel={getActiveTabLabel()}
+          />
+        </TabsContent>
 
-      <TabsContent value="flagged" className="mt-0">
-        <MembersListContent
-          isLoading={isLoading}
-          filteredMembers={filteredMembers}
-          viewMode={viewMode}
-          onMemberClick={handleMemberClick}
-          onViewDetails={handleViewDetails}
-          onEditMember={handleEditMember}
-          readOnly={readOnly}
-          refetch={refetch}
-          isError={isError}
-          totalCount={members.length}
-          activeTabLabel={getActiveTabLabel()}
-        />
-      </TabsContent>
+        <TabsContent value="flagged" className="mt-0">
+          <MembersListContent
+            isLoading={isLoading}
+            filteredMembers={filteredMembers}
+            viewMode={viewMode}
+            onMemberClick={handleMemberClick}
+            onViewDetails={handleViewDetails}
+            onEditMember={handleEditMember}
+            readOnly={readOnly}
+            refetch={refetch}
+            isError={isError}
+            totalCount={members.length}
+            activeTabLabel={getActiveTabLabel()}
+          />
+        </TabsContent>
 
-      <TabsContent value="my-members" className="mt-0">
-        <MembersListContent
-          isLoading={isLoading}
-          filteredMembers={filteredMembers}
-          viewMode={viewMode}
-          onMemberClick={handleMemberClick}
-          onViewDetails={handleViewDetails}
-          onEditMember={handleEditMember}
-          readOnly={readOnly}
-          refetch={refetch}
-          isError={isError}
-          totalCount={members.length}
-          activeTabLabel={getActiveTabLabel()}
-        />
-      </TabsContent>
+        <TabsContent value="my-members" className="mt-0">
+          <MembersListContent
+            isLoading={isLoading}
+            filteredMembers={filteredMembers}
+            viewMode={viewMode}
+            onMemberClick={handleMemberClick}
+            onViewDetails={handleViewDetails}
+            onEditMember={handleEditMember}
+            readOnly={readOnly}
+            refetch={refetch}
+            isError={isError}
+            totalCount={members.length}
+            activeTabLabel={getActiveTabLabel()}
+          />
+        </TabsContent>
+      </Tabs>
 
       {showDetailView && selectedMember && (
         <MemberDetailView 
