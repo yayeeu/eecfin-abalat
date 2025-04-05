@@ -161,7 +161,7 @@ const ContactLogForm: React.FC<ContactLogFormProps> = ({
               <SelectValue placeholder="Select an elder" />
             </SelectTrigger>
             <SelectContent>
-              {elderOptions.map((elder) => (
+              {elderOptions && elderOptions.map((elder) => (
                 <SelectItem key={elder.value} value={elder.value}>
                   {elder.label}
                 </SelectItem>
@@ -187,7 +187,7 @@ const ContactLogForm: React.FC<ContactLogFormProps> = ({
               <SelectValue placeholder="Select a member" />
             </SelectTrigger>
             <SelectContent>
-              {memberOptions.map((member) => (
+              {memberOptions && memberOptions.map((member) => (
                 <SelectItem key={member.value} value={member.value}>
                   {member.label}
                 </SelectItem>

@@ -32,3 +32,12 @@ export const getMembersForDropdown = async () => {
   
   return data;
 };
+
+// Add the missing function for dropdown options
+export const getMemberDropdownOptions = async () => {
+  const members = await getMembersForDropdown();
+  return members.map(member => ({
+    value: member.id,
+    label: member.name || 'Unknown'
+  }));
+};

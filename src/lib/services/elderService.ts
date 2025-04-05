@@ -98,6 +98,15 @@ export const getEldersForDropdown = async (): Promise<{ id: string; name: string
   }
 };
 
+// Add the missing function
+export const getElderDropdownOptions = async () => {
+  const elders = await getEldersForDropdown();
+  return elders.map(elder => ({
+    value: elder.id,
+    label: elder.name
+  }));
+};
+
 // Function to populate with sample data (kept for reference)
 export const populateWithSampleData = async () => {
   if (!isSupabaseConfigured()) {
