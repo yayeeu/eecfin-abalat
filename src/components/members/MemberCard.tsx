@@ -5,15 +5,10 @@ import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { User, Mail, Phone, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface Member {
-  id: string;
-  name?: string;
-  email?: string;
-}
+import { SimpleMember } from '@/hooks/useElderAssignments';
 
 interface MemberCardProps {
-  member: Member;
+  member: SimpleMember;
   currentElderId: string;
 }
 

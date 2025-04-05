@@ -4,17 +4,12 @@ import { useDrop } from "react-dnd";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import MemberCard from "./MemberCard";
-
-interface Member {
-  id: string;
-  name?: string;
-  email?: string;
-}
+import { SimpleMember } from "@/hooks/useElderAssignments";
 
 interface ElderBucketProps {
-  elderId: string | null;
+  elderId: string;
   elderName: string;
-  members: Member[];
+  members: SimpleMember[];
   onMemberDrop?: (memberId: string, targetElderId: string) => void;
   onMoveMember?: (memberId: string, elderId: string | null) => void;
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -151,7 +150,7 @@ const ManageMembers = () => {
               </CardHeader>
               <CardContent>
                 <ElderBucket 
-                  elderId={null}
+                  elderId="unassigned"
                   elderName="Unassigned"
                   members={unassignedMembers}
                   onMoveMember={handleMoveMember}
