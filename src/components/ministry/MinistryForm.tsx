@@ -28,13 +28,14 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
+// Updated the schema to use string instead of enum
 const formSchema = z.object({
   name: z.string().min(1, 'Ministry name is required'),
   description: z.string().min(1, 'Description is required'),
   contact_person_id: z.string().min(1, 'Contact person is required'),
   contact_email: z.string().email('Please enter a valid email address').min(1, 'Email is required'),
   photo: z.string().optional(),
-  status: z.enum(['active', 'inactive'])
+  status: z.string().min(1, 'Status is required') // Changed from z.enum to z.string()
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -334,9 +335,9 @@ const MinistryForm: React.FC<MinistryFormProps> = ({
           <Button 
             type="submit" 
             className="bg-eecfin-navy"
-            disabled={isUploading}
+            disabled={form.formState.isSubmitting}
           >
-            {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {ministry ? 'Update Ministry' : 'Add Ministry'}
           </Button>
         </DialogFooter>
