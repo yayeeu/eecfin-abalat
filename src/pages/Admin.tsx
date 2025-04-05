@@ -18,8 +18,6 @@ const Admin: React.FC = () => {
     const path = location.pathname;
     if (path === '/admin' || path === '/admin/dashboard') {
       setActiveSection('dashboard');
-    } else if (path === '/admin/manage-members') {
-      setActiveSection('manage_members');
     } else if (path === '/admin/all-members') {
       setActiveSection('members');
     } else if (path === '/admin/manage-ministries') {
@@ -32,7 +30,6 @@ const Admin: React.FC = () => {
     dashboard: ['admin', 'elder'],
     ministries: ['admin'],
     members: ['admin', 'elder'],
-    manage_members: ['admin', 'elder'],
   };
 
   // If member role tries to access admin, redirect to home

@@ -59,16 +59,7 @@ const AdminSidebar: React.FC = () => {
           <SidebarGroup>
             <SidebarGroupLabel>Members</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem className={isActive("/admin/manage-members") ? "active" : ""}>
-                  <SidebarMenuButton asChild>
-                    <Link to="/admin/manage-members">
-                      <Users className="mr-2 h-4 w-4" />
-                      <span>Manage Members</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                
+              <SidebarMenu>                
                 <SidebarMenuItem className={isActive("/admin/all-members") ? "active" : ""}>
                   <SidebarMenuButton asChild>
                     <Link to="/admin/all-members">

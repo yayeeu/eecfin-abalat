@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import RoleGuard from '@/components/auth/RoleGuard';
 import Dashboard from '@/components/Dashboard';
 import MinistryManager from '@/components/MinistryManager';
-import MemberManager from '@/components/MemberManager';
 import AllMembersList from '@/components/AllMembersList';
 
 interface AdminContentProps {
@@ -17,7 +16,6 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
       case 'dashboard': return 'Church Dashboard';
       case 'ministries': return 'Manage Ministries';
       case 'members': return 'All Church Members';
-      case 'manage_members': return 'Manage Member Assignments';
       default: return '';
     }
   };
@@ -30,8 +28,6 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
         return 'Add, edit, or delete ministry information displayed on the Get Involved page.';
       case 'members': 
         return 'View all church members, search/filter, and edit their information.';
-      case 'manage_members': 
-        return 'Assign members to elders using drag and drop functionality.';
       default: 
         return '';
     }
@@ -61,11 +57,6 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
       {activeSection === 'members' && (
         <RoleGuard allowedRoles={['admin', 'elder']}>
           <AllMembersList onMemberSelect={(id) => console.log(`Selected member: ${id}`)} />
-        </RoleGuard>
-      )}
-      {activeSection === 'manage_members' && (
-        <RoleGuard allowedRoles={['admin', 'elder']}>
-          <MemberManager />
         </RoleGuard>
       )}
     </div>
