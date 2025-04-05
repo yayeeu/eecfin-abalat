@@ -8,27 +8,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
-import NotFoundPage from "./pages/NotFound";
+import NotFound from "./pages/NotFound";
 import RoleGuard from "@/components/auth/RoleGuard";
 
 // Lazy-loaded components for better initial loading performance
-const Home = lazy(() => import('./pages/Home'));
-const WhoWeAre = lazy(() => import('./pages/WhoWeAre'));
-const Constitution = lazy(() => import('./pages/Constitution'));
-const OurFaith = lazy(() => import('./pages/OurFaith'));
-const OurLeadership = lazy(() => import('./pages/OurLeadership'));
-const Sermons = lazy(() => import('./pages/Sermons'));
-const Events = lazy(() => import('./pages/Events'));
-const Contact = lazy(() => import('./pages/Contact'));
-const GetInvolved = lazy(() => import('./pages/GetInvolved'));
-const Give = lazy(() => import('./pages/Give'));
-const Auth = lazy(() => import('./pages/Auth'));
-const Admin = lazy(() => import('./pages/Admin'));
-const Profile = lazy(() => import('./pages/Profile'));
-const ManageMembers = lazy(() => import('./pages/ManageMembers'));
-const AddMember = lazy(() => import('./pages/AddMember'));
-const MinistryManager = lazy(() => import('./components/MinistryManager'));
-const FollowUps = lazy(() => import('./pages/FollowUps'));
+const Admin = lazy(() => import("./pages/Admin"));
+const Auth = lazy(() => import("./pages/Auth"));
 
 // Configure the query client with performance optimizations
 const queryClient = new QueryClient({
@@ -84,7 +69,7 @@ const App = () => (
             />
 
             {/* 404 Route */}
-            <Route path="*" element={<NotFoundPage />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
