@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -12,8 +11,24 @@ import NotFound from "./pages/NotFound";
 import RoleGuard from "@/components/auth/RoleGuard";
 
 // Lazy-loaded components for better initial loading performance
-const Admin = lazy(() => import("./pages/Admin"));
-const Auth = lazy(() => import("./pages/Auth"));
+const Home = lazy(() => import('./pages/Home'));
+const WhoWeAre = lazy(() => import('./pages/WhoWeAre'));
+const Constitution = lazy(() => import('./pages/Constitution'));
+const OurFaith = lazy(() => import('./pages/OurFaith'));
+const OurLeadership = lazy(() => import('./pages/OurLeadership'));
+const Sermons = lazy(() => import('./pages/Sermons'));
+const Events = lazy(() => import('./pages/Events'));
+const Contact = lazy(() => import('./pages/Contact'));
+const GetInvolved = lazy(() => import('./pages/GetInvolved'));
+const Give = lazy(() => import('./pages/Give'));
+const Auth = lazy(() => import('./pages/Auth'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Profile = lazy(() => import('./pages/Profile'));
+const ManageMembers = lazy(() => import('./pages/ManageMembers'));
+const AddMember = lazy(() => import('./pages/AddMember'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const MinistryManager = lazy(() => import('./components/MinistryManager'));
+const FollowUps = lazy(() => import('./pages/FollowUps'));
 
 // Configure the query client with performance optimizations
 const queryClient = new QueryClient({
