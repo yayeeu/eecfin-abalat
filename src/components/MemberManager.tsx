@@ -7,9 +7,8 @@ import ElderBucket from "./members/ElderBucket";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AddMemberDialog from "./members/AddMemberDialog";
-import MemberCard from "./members/MemberCard";
 
-// Simplified interfaces to prevent deep type instantiation
+// Define simple interfaces to avoid deep type instantiation
 interface SimpleMember {
   id: string;
   name?: string;

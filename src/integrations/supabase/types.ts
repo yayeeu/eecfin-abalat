@@ -227,8 +227,8 @@ export type Database = {
       }
       ministries: {
         Row: {
-          contact_email: string
-          contact_name: string
+          contact_email: string | null
+          contact_name: string | null
           contact_person_id: string | null
           contact_phone: string | null
           created_at: string | null
@@ -236,11 +236,11 @@ export type Database = {
           id: string
           name: string
           photo: string | null
-          status: string
+          status: string | null
         }
         Insert: {
-          contact_email: string
-          contact_name: string
+          contact_email?: string | null
+          contact_name?: string | null
           contact_person_id?: string | null
           contact_phone?: string | null
           created_at?: string | null
@@ -248,11 +248,11 @@ export type Database = {
           id?: string
           name: string
           photo?: string | null
-          status: string
+          status?: string | null
         }
         Update: {
-          contact_email?: string
-          contact_name?: string
+          contact_email?: string | null
+          contact_name?: string | null
           contact_person_id?: string | null
           contact_phone?: string | null
           created_at?: string | null
@@ -260,7 +260,7 @@ export type Database = {
           id?: string
           name?: string
           photo?: string | null
-          status?: string
+          status?: string | null
         }
         Relationships: [
           {

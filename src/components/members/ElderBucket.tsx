@@ -12,10 +12,11 @@ interface Member {
 }
 
 interface ElderBucketProps {
-  elderId: string;
+  elderId: string | null;
   elderName: string;
   members: Member[];
-  onMemberDrop: (memberId: string, targetElderId: string) => void;
+  onMemberDrop?: (memberId: string, targetElderId: string) => void;
+  onMoveMember?: (memberId: string, elderId: string | null) => void;
 }
 
 const ElderBucket: React.FC<ElderBucketProps> = ({
@@ -23,12 +24,19 @@ const ElderBucket: React.FC<ElderBucketProps> = ({
   elderName,
   members,
   onMemberDrop,
+  onMoveMember,
 }) => {
+  const handleDrop = (item: { id: string }) => {
+    if (onMemberDrop && elderId !== null) {
+      onMemberDrop(item.id, elderId);
+    } else if (onMoveMember) {
+      onMoveMember(item.id, elderId);
+    }
+  };
+
   const [{ isOver }, drop] = useDrop({
     accept: "MEMBER",
-    drop: (item: { id: string }) => {
-      onMemberDrop(item.id, elderId);
-    },
+    drop: handleDrop,
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
@@ -50,7 +58,7 @@ const ElderBucket: React.FC<ElderBucketProps> = ({
             <MemberCard 
               key={member.id}
               member={member} 
-              currentElderId={elderId}
+              currentElderId={elderId || "unassigned"}
             />
           ))
         )}

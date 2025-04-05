@@ -2,6 +2,7 @@
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { Card, CardContent } from '../ui/card';
+import { Badge } from '../ui/badge';
 import { User, Mail, Phone, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
