@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -54,6 +55,19 @@ interface State {
 }
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
+
+// Note: We need to create context outside of components
+const ToastStateContext = React.createContext<State | undefined>(undefined)
+const ToastDispatchContext = React.createContext<React.Dispatch<Action> | undefined>(undefined)
+
+// Initial state
+const initialState: State = {
+  toasts: [],
+}
+
+// Global toast state for use outside of React components
+let memoryState: State = { toasts: [] }
+const listeners: Array<(state: State) => void> = []
 
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
@@ -126,25 +140,18 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
-// Create separate contexts for both the state and the dispatch function
-const ToastStateContext = React.createContext<State | undefined>(undefined)
-const ToastDispatchContext = React.createContext<React.Dispatch<Action> | undefined>(undefined)
-
-// Initial state
-const initialState: State = {
-  toasts: [],
-}
-
-// Provider component
+// Provider component - using React.createElement instead of JSX
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = React.useReducer(reducer, initialState)
 
-  return (
-    <ToastStateContext.Provider value={state}>
-      <ToastDispatchContext.Provider value={dispatch}>
-        {children}
-      </ToastDispatchContext.Provider>
-    </ToastStateContext.Provider>
+  return React.createElement(
+    ToastStateContext.Provider,
+    { value: state },
+    React.createElement(
+      ToastDispatchContext.Provider,
+      { value: dispatch },
+      children
+    )
   )
 }
 
@@ -210,10 +217,7 @@ export function useToast() {
   }
 }
 
-// Global toast function for use outside of React components
-let memoryState: State = { toasts: [] }
-const listeners: Array<(state: State) => void> = []
-
+// Global dispatch function for use outside of React components
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
   listeners.forEach((listener) => {
@@ -223,6 +227,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
+// Global toast function for use outside of React components
 export function toast({ ...props }: Toast) {
   const id = genId()
 
