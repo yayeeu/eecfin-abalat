@@ -8,6 +8,7 @@ import MemberMetrics from './dashboard/MemberMetrics';
 import ElderCareMetrics from './dashboard/ElderCareMetrics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { Member } from '@/types/database.types';
 
 const Dashboard: React.FC = () => {
   const { data: members, isLoading: membersLoading } = useQuery({
@@ -20,7 +21,7 @@ const Dashboard: React.FC = () => {
     queryFn: getElderMembers
   });
 
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, isLoading: userLoading } = useQuery<Member | null>({
     queryKey: ['currentUser'],
     queryFn: getCurrentUser
   });
@@ -37,7 +38,7 @@ const Dashboard: React.FC = () => {
     enabled: !!currentUser?.id
   });
 
-  const isLoading = membersLoading || eldersLoading || myMembersLoading || contactLogsLoading;
+  const isLoading = membersLoading || eldersLoading || myMembersLoading || contactLogsLoading || userLoading;
 
   if (isLoading) {
     return (

@@ -36,3 +36,24 @@ export const updateUserProfile = async (userId: string, data: any) => {
   if (error) throw error;
   return true;
 };
+
+// Add the getCurrentUser function
+export const getCurrentUser = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return null;
+  
+  // Fetch the user's profile from the members table
+  const { data, error } = await supabase
+    .from('members')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+  
+  if (error) {
+    console.error('Error fetching current user:', error);
+    return null;
+  }
+  
+  return data;
+};
