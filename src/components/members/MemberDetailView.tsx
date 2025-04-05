@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Member } from '@/types/database.types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -182,13 +181,15 @@ const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onClose }) 
                 </div>
               )}
               
-              <div className="flex items-start gap-3">
-                <Users className="w-5 h-5 text-gray-500 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Number of Children</p>
-                  <p className="text-gray-900">{member.num_children !== undefined ? member.num_children : 'N/A'}</p>
+              {member.num_children !== undefined && member.num_children > 0 && (
+                <div className="flex items-center">
+                  <User className="h-5 w-5 text-gray-500 mr-3" />
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">Number of Children</div>
+                    <div className="text-sm text-gray-600">{member.num_children}</div>
+                  </div>
                 </div>
-              </div>
+              )}
               
               {member.children_names && (
                 <div className="flex items-start gap-3">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Member, ContactLog } from '@/types/database.types';
 import { 
@@ -34,7 +33,6 @@ const groupContactLogsByPeriod = (logs: ContactLog[]) => {
   const lastWeekEnd = endOfWeek(subWeeks(now, 1));
   const twoWeeksAgoStart = startOfWeek(subWeeks(now, 2), { weekStartsOn: 1 });
   const twoWeeksAgoEnd = endOfWeek(subWeeks(now, 2));
-  const thisMonthStart = startOfMonth(now);
   const lastMonthStart = startOfMonth(subMonths(now, 1));
   const lastMonthEnd = endOfMonth(subMonths(now, 1));
   
@@ -50,10 +48,6 @@ const groupContactLogsByPeriod = (logs: ContactLog[]) => {
     'Two weeks ago': logs.filter(log => {
       const logDate = new Date(log.created_at || '');
       return isWithinInterval(logDate, { start: twoWeeksAgoStart, end: twoWeeksAgoEnd });
-    }),
-    'This month': logs.filter(log => {
-      const logDate = new Date(log.created_at || '');
-      return isWithinInterval(logDate, { start: thisMonthStart, end: now });
     }),
     'Last month': logs.filter(log => {
       const logDate = new Date(log.created_at || '');
@@ -221,79 +215,159 @@ const ElderCareMetrics: React.FC<{
           
           <div className="p-6">
             <div className="space-y-6">
-              {Object.entries(groupedLogs).map(([period, logs]) => logs.length > 0 && (
-                <div key={period} className="space-y-4">
-                  <div className="flex items-center mb-3">
-                    <CalendarDays className="h-5 w-5 text-indigo-600 mr-2" />
-                    <h5 className="text-sm font-semibold text-gray-700">{period}</h5>
-                    <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                      {logs.length} logs
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center mb-3">
-                        <PieChart className="h-5 w-5 text-indigo-600 mr-2" />
-                        <h5 className="text-sm font-semibold text-gray-700">By Member Type</h5>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {allLogsLoading ? (
-                          <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
-                        ) : getLogsByMemberType(logs).length === 0 ? (
-                          <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
-                        ) : (
-                          getLogsByMemberType(logs).map((item, index) => (
-                            item.logCount > 0 && (
-                              <div 
-                                key={`${period}-${item.id}`} 
-                                className={`rounded-lg p-3 ${typeColors[index % typeColors.length]} flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
-                              >
-                                <div className="text-xl font-bold">{item.logCount}</div>
-                                <div className="text-xs font-medium mt-1">{item.name || 'Unnamed'}</div>
-                              </div>
-                            )
-                          ))
-                        )}
-                      </div>
+              {['This week', 'Last week'].map((period) => {
+                const logs = groupedLogs[period as keyof typeof groupedLogs];
+                return logs.length > 0 && (
+                  <div key={period} className="space-y-4">
+                    <div className="flex items-center mb-3">
+                      <CalendarDays className="h-5 w-5 text-indigo-600 mr-2" />
+                      <h5 className="text-sm font-semibold text-gray-700">{period}</h5>
+                      <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                        {logs.length} logs
+                      </span>
                     </div>
                     
-                    <div className="space-y-4">
-                      <div className="flex items-center mb-3">
-                        <MessageSquare className="h-5 w-5 text-rose-600 mr-2" />
-                        <h5 className="text-sm font-semibold text-gray-700">By Contact Type</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center mb-3">
+                          <PieChart className="h-5 w-5 text-indigo-600 mr-2" />
+                          <h5 className="text-sm font-semibold text-gray-700">By Member Type</h5>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {allLogsLoading ? (
+                            <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
+                          ) : getLogsByMemberType(logs).length === 0 ? (
+                            <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
+                          ) : (
+                            getLogsByMemberType(logs).map((item, index) => (
+                              item.logCount > 0 && (
+                                <div 
+                                  key={`${period}-${item.id}`} 
+                                  className={`rounded-lg p-3 ${typeColors[index % typeColors.length]} flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
+                                >
+                                  <div className="text-xl font-bold">{item.logCount}</div>
+                                  <div className="text-xs font-medium mt-1">{item.name || 'Unnamed'}</div>
+                                </div>
+                              )
+                            ))
+                          )}
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {allLogsLoading ? (
-                          <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
-                        ) : getLogsByContactType(logs).length === 0 ? (
-                          <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
-                        ) : (
-                          getLogsByContactType(logs).map((item, index) => {
-                            const IconComponent = contactTypeIcons[item.type] || MessageSquare;
-                            const colorClasses = [
-                              'bg-blue-50 text-blue-700 border-blue-200',
-                              'bg-green-50 text-green-700 border-green-200',
-                              'bg-amber-50 text-amber-700 border-amber-200',
-                              'bg-rose-50 text-rose-700 border-rose-200',
-                            ];
-                            return (
-                              <div 
-                                key={`${period}-${item.type}`} 
-                                className={`rounded-lg p-3 ${colorClasses[index % colorClasses.length]} border flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
-                              >
-                                <IconComponent className="h-5 w-5 mb-2" />
-                                <div className="text-xl font-bold">{item.count}</div>
-                                <div className="text-xs font-medium mt-1">{item.type}</div>
-                              </div>
-                            );
-                          })
-                        )}
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center mb-3">
+                          <MessageSquare className="h-5 w-5 text-rose-600 mr-2" />
+                          <h5 className="text-sm font-semibold text-gray-700">By Contact Type</h5>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {allLogsLoading ? (
+                            <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
+                          ) : getLogsByContactType(logs).length === 0 ? (
+                            <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
+                          ) : (
+                            getLogsByContactType(logs).map((item, index) => {
+                              const IconComponent = contactTypeIcons[item.type] || MessageSquare;
+                              const colorClasses = [
+                                'bg-blue-50 text-blue-700 border-blue-200',
+                                'bg-green-50 text-green-700 border-green-200',
+                                'bg-amber-50 text-amber-700 border-amber-200',
+                                'bg-rose-50 text-rose-700 border-rose-200',
+                              ];
+                              return (
+                                <div 
+                                  key={`${period}-${item.type}`} 
+                                  className={`rounded-lg p-3 ${colorClasses[index % colorClasses.length]} border flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
+                                >
+                                  <IconComponent className="h-5 w-5 mb-2" />
+                                  <div className="text-xl font-bold">{item.count}</div>
+                                  <div className="text-xs font-medium mt-1">{item.type}</div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+              
+              {['Two weeks ago', 'Last month', 'Older'].map((period) => {
+                const logs = groupedLogs[period as keyof typeof groupedLogs];
+                return logs.length > 0 && (
+                  <div key={period} className="space-y-4">
+                    <div className="flex items-center mb-3">
+                      <CalendarDays className="h-5 w-5 text-indigo-600 mr-2" />
+                      <h5 className="text-sm font-semibold text-gray-700">{period}</h5>
+                      <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                        {logs.length} logs
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center mb-3">
+                          <PieChart className="h-5 w-5 text-indigo-600 mr-2" />
+                          <h5 className="text-sm font-semibold text-gray-700">By Member Type</h5>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {allLogsLoading ? (
+                            <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
+                          ) : getLogsByMemberType(logs).length === 0 ? (
+                            <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
+                          ) : (
+                            getLogsByMemberType(logs).map((item, index) => (
+                              item.logCount > 0 && (
+                                <div 
+                                  key={`${period}-${item.id}`} 
+                                  className={`rounded-lg p-3 ${typeColors[index % typeColors.length]} flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
+                                >
+                                  <div className="text-xl font-bold">{item.logCount}</div>
+                                  <div className="text-xs font-medium mt-1">{item.name || 'Unnamed'}</div>
+                                </div>
+                              )
+                            ))
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center mb-3">
+                          <MessageSquare className="h-5 w-5 text-rose-600 mr-2" />
+                          <h5 className="text-sm font-semibold text-gray-700">By Contact Type</h5>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {allLogsLoading ? (
+                            <div className="col-span-full text-center py-4 text-gray-400">Loading data...</div>
+                          ) : getLogsByContactType(logs).length === 0 ? (
+                            <div className="col-span-full text-center py-4 text-gray-400">No contact logs available</div>
+                          ) : (
+                            getLogsByContactType(logs).map((item, index) => {
+                              const IconComponent = contactTypeIcons[item.type] || MessageSquare;
+                              const colorClasses = [
+                                'bg-blue-50 text-blue-700 border-blue-200',
+                                'bg-green-50 text-green-700 border-green-200',
+                                'bg-amber-50 text-amber-700 border-amber-200',
+                                'bg-rose-50 text-rose-700 border-rose-200',
+                              ];
+                              return (
+                                <div 
+                                  key={`${period}-${item.type}`} 
+                                  className={`rounded-lg p-3 ${colorClasses[index % colorClasses.length]} border flex flex-col items-center justify-center text-center shadow-sm transition-transform hover:scale-105`}
+                                >
+                                  <IconComponent className="h-5 w-5 mb-2" />
+                                  <div className="text-xl font-bold">{item.count}</div>
+                                  <div className="text-xs font-medium mt-1">{item.type}</div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             
             <div className="mt-6 pt-6 border-t border-gray-100">

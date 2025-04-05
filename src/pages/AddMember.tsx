@@ -46,7 +46,7 @@ const formSchema = z.object({
   emergency_contact: z.string().optional().nullable(),
   is_baptised: z.boolean().optional(),
   has_letter_from_prev_church: z.boolean().optional(),
-  num_children: z.string().transform(val => val ? parseInt(val, 10) : 0),
+  num_children: z.string().transform((val) => val === '' ? 0 : parseInt(val, 10)),
 });
 
 // Define the form type from the schema
@@ -77,7 +77,7 @@ const AddMember = () => {
       status: 'active',
       is_baptised: false,
       has_letter_from_prev_church: false,
-      num_children: '0', // Keep as string in the form
+      num_children: '',
     },
   });
 
@@ -102,7 +102,7 @@ const AddMember = () => {
             form.setValue('status', member.status || 'active');
             form.setValue('is_baptised', member.is_baptised || false);
             form.setValue('has_letter_from_prev_church', member.has_letter_from_prev_church || false);
-            form.setValue('num_children', member.num_children?.toString() || '0');
+            form.setValue('num_children', member.num_children?.toString() || '');
             
             // Fetch role by id and set the role name
             if (member.role_id) {
@@ -438,10 +438,11 @@ const AddMember = () => {
                   <FormItem>
                     <FormLabel>Number of Children</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Number of Children"
-                        type="number"
-                        {...field}
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field} 
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />
