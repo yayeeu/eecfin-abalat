@@ -4,122 +4,184 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Button } from "./ui/button";
 import ElderBucket from "./members/ElderBucket";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "./ui/use-toast";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { PlusCircle } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllMembers, getElderMembers, assignElderToMember, removeElderAssignment } from '@/lib/memberService';
-import { Member } from '@/types/database.types';
-import { Loader2 } from 'lucide-react';
+
+interface Member {
+  id: string;
+  name?: string;
+  email?: string;
+}
+
+interface Elder {
+  id: string;
+  name: string;
+}
 
 const MemberManager: React.FC = () => {
-  const [elderGroups, setElderGroups] = useState<{ [key: string]: Member[] }>({});
-  const [unassignedMembers, setUnassignedMembers] = useState<Member[]>([]);
+  const [elders, setElders] = useState<Elder[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [elderAssignments, setElderAssignments] = useState<Record<string, string[]>>({
+    unassigned: [],
+  });
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [loading, setLoading] = useState(true);
 
-  // Fetch members data
-  const { data: members, isLoading: loadingMembers } = useQuery({
-    queryKey: ['members'],
-    queryFn: getAllMembers
-  });
-
-  // Fetch elders data
-  const { data: elders, isLoading: loadingElders } = useQuery({
-    queryKey: ['elders'],
-    queryFn: getElderMembers
-  });
-
-  // Mutation for assigning a member to an elder
-  const assignMutation = useMutation({
-    mutationFn: ({ memberId, elderId }: { memberId: string; elderId: string }) => {
-      return assignElderToMember(memberId, elderId);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Member assigned",
-        description: "The member has been successfully assigned to the elder.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['members'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Assignment failed",
-        description: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Mutation for removing an elder assignment
-  const unassignMutation = useMutation({
-    mutationFn: (memberId: string) => {
-      return removeElderAssignment(memberId);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Member unassigned",
-        description: "The member has been unassigned successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['members'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Unassignment failed",
-        description: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Organize members by assigned elder
   useEffect(() => {
-    if (!members || !elders) return;
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch all elders
+        const { data: eldersData, error: eldersError } = await supabase
+          .from("elders")
+          .select("id, name");
 
-    const groups: { [key: string]: Member[] } = {};
-    const unassigned: Member[] = [];
+        if (eldersError) throw eldersError;
 
-    // Initialize groups for each elder
-    elders.forEach(elder => {
-      groups[elder.id] = [];
-    });
+        // Fetch all members
+        const { data: membersData, error: membersError } = await supabase
+          .from("members")
+          .select("id, name, email");
 
-    // Group members by their assigned elder
-    members.forEach(member => {
-      if (member.assigned_elder && member.assigned_elder.elder_id) {
-        const elderId = member.assigned_elder.elder_id;
-        if (groups[elderId]) {
-          groups[elderId].push(member);
-        } else {
-          // If the elder doesn't exist in our groups (rare case), put in unassigned
-          unassigned.push(member);
+        if (membersError) throw membersError;
+
+        // Fetch current elder assignments
+        const { data: assignmentsData, error: assignmentsError } = await supabase
+          .from("member_under_elder")
+          .select("elder_id, member_id");
+
+        if (assignmentsError) throw assignmentsError;
+
+        // Process the data
+        setElders(eldersData || []);
+        setMembers(membersData || []);
+
+        // Create initial assignments map
+        const assignments: Record<string, string[]> = { unassigned: [] };
+        
+        // Initialize assignments for each elder
+        eldersData?.forEach((elder) => {
+          assignments[elder.id] = [];
+        });
+
+        // Add members to their assigned elders
+        assignmentsData?.forEach((assignment) => {
+          if (assignments[assignment.elder_id]) {
+            assignments[assignment.elder_id].push(assignment.member_id);
+          }
+        });
+
+        // Find unassigned members
+        const assignedMemberIds = assignmentsData?.map(a => a.member_id) || [];
+        const unassignedMembers = membersData?.filter(
+          member => !assignedMemberIds.includes(member.id)
+        ) || [];
+        
+        assignments.unassigned = unassignedMembers.map(m => m.id);
+
+        setElderAssignments(assignments);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load elders and members data",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [toast]);
+
+  const handleMemberDrop = async (memberId: string, targetElderId: string) => {
+    try {
+      // Find which elder bucket the member is currently in
+      let currentElderId: string | null = null;
+      
+      for (const [elderId, memberIds] of Object.entries(elderAssignments)) {
+        if (memberIds.includes(memberId)) {
+          currentElderId = elderId;
+          break;
+        }
+      }
+
+      if (currentElderId === targetElderId) return; // No change needed
+
+      // Update the local state first for immediate feedback
+      const newAssignments = { ...elderAssignments };
+      
+      // Remove from current bucket
+      if (currentElderId) {
+        newAssignments[currentElderId] = newAssignments[currentElderId].filter(
+          id => id !== memberId
+        );
+      }
+      
+      // Add to target bucket
+      if (!newAssignments[targetElderId].includes(memberId)) {
+        newAssignments[targetElderId].push(memberId);
+      }
+      
+      setElderAssignments(newAssignments);
+
+      // If moving to unassigned, just delete the assignment
+      if (targetElderId === "unassigned") {
+        if (currentElderId !== "unassigned") {
+          const { error } = await supabase
+            .from("member_under_elder")
+            .delete()
+            .match({ member_id: memberId });
+
+          if (error) throw error;
         }
       } else {
-        unassigned.push(member);
+        // Check if there's an existing assignment
+        if (currentElderId !== "unassigned") {
+          // Update existing assignment
+          const { error } = await supabase
+            .from("member_under_elder")
+            .update({ elder_id: targetElderId })
+            .match({ member_id: memberId });
+
+          if (error) throw error;
+        } else {
+          // Create new assignment
+          const { error } = await supabase
+            .from("member_under_elder")
+            .insert({ member_id: memberId, elder_id: targetElderId });
+
+          if (error) throw error;
+        }
       }
-    });
 
-    setElderGroups(groups);
-    setUnassignedMembers(unassigned);
-  }, [members, elders]);
-
-  const handleMemberDrop = (memberId: string, targetElderId: string | null) => {
-    if (targetElderId === null) {
-      // Unassign the member
-      unassignMutation.mutate(memberId);
-    } else {
-      // Assign the member to the elder
-      assignMutation.mutate({ memberId, elderId: targetElderId });
+      toast({
+        title: "Success",
+        description: "Member assignment updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating assignment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update member assignment",
+        variant: "destructive",
+      });
+      
+      // Refresh the data to ensure state is consistent with database
+      window.location.reload();
     }
   };
 
-  if (loadingMembers || loadingElders) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-        <span>Loading member and elder data...</span>
-      </div>
-    );
+  const getMembersForElder = (elderId: string) => {
+    const memberIds = elderAssignments[elderId] || [];
+    return members.filter(member => memberIds.includes(member.id));
+  };
+
+  if (loading) {
+    return <div className="p-8">Loading elder and member data...</div>;
   }
 
   return (
@@ -142,20 +204,20 @@ const MemberManager: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="col-span-1">
             <ElderBucket
-              elderId={null}
+              elderId="unassigned"
               elderName="Unassigned Members"
-              members={unassignedMembers}
-              onMoveMember={handleMemberDrop}
+              members={getMembersForElder("unassigned")}
+              onMemberDrop={handleMemberDrop}
             />
           </div>
 
-          {elders && elders.map((elder) => (
+          {elders.map((elder) => (
             <div key={elder.id} className="col-span-1">
               <ElderBucket
                 elderId={elder.id}
                 elderName={elder.name}
-                members={elderGroups[elder.id] || []}
-                onMoveMember={handleMemberDrop}
+                members={getMembersForElder(elder.id)}
+                onMemberDrop={handleMemberDrop}
               />
             </div>
           ))}
