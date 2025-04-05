@@ -20,7 +20,7 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('list');
 
-  // Query to fetch all members
+  // Query to fetch all members, including those without user accounts
   const { 
     data: members = [], 
     isLoading, 
@@ -28,16 +28,26 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
     refetch 
   } = useQuery({
     queryKey: ['members'],
-    queryFn: getAllMembers
+    queryFn: getAllMembers,
+    onError: (error) => {
+      console.error('Error fetching members:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load members data. Please try again.',
+        variant: 'destructive',
+      });
+    }
   });
 
   // Filter members based on search term
-  const filteredMembers = members.filter(member => 
-    member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.phone?.includes(searchTerm) ||
-    member.address?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMembers = searchTerm 
+    ? members.filter(member => 
+        member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.phone?.includes(searchTerm) ||
+        member.address?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : members;
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
