@@ -3,7 +3,6 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllMembers, getElderMembers } from '@/lib/memberService';
 import { getMinistries } from '@/lib/ministryService';
-import MembersMap from './dashboard/MembersMap';
 import MemberMetrics from './dashboard/MemberMetrics';
 import MinistryStats from './dashboard/MinistryStats';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,15 +60,6 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-      
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Members Map</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <MembersMap members={members || []} />
-        </CardContent>
-      </Card>
     </div>
   );
 };
