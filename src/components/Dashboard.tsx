@@ -12,7 +12,7 @@ import { Member } from '@/types/database.types';
 
 const Dashboard: React.FC = () => {
   // Fetch current user data first with shorter staleTime
-  const { data: currentUser, isLoading: userLoading } = useQuery<Member>({
+  const { data: currentUser, isLoading: userLoading } = useQuery<Member | null>({
     queryKey: ['currentUser'],
     queryFn: getCurrentUser,
     staleTime: 5 * 60 * 1000, // 5 minutes

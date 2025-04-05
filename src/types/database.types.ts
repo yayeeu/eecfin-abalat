@@ -75,16 +75,15 @@ export interface Member {
   gender?: string;
   marital_status?: string;
   spouse_name?: string;
-  children_names?: string; // This should be a string
   previous_church?: string;
   role_in_previous_church?: string;
   emergency_contact?: string;
   has_letter_from_prev_church?: boolean;
-  status?: 'active' | 'inactive' | string; // Updated to accept any string value
+  status?: 'active' | 'inactive' | string;
   // New fields
   is_baptised?: boolean;
-  num_children?: number; // This should be a number
-  member_type_id?: string; // Added missing member_type_id property
+  num_children?: number;
+  member_type_id?: string;
   // Geographic coordinates
   latitude?: number;
   longitude?: number;

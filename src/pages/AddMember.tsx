@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -42,7 +41,6 @@ const formSchema = z.object({
   gender: z.string().optional().nullable(),
   marital_status: z.string().optional().nullable(),
   spouse_name: z.string().optional().nullable(),
-  children_names: z.string().optional().nullable(),
   previous_church: z.string().optional().nullable(),
   role_in_previous_church: z.string().optional().nullable(),
   emergency_contact: z.string().optional().nullable(),
@@ -73,7 +71,6 @@ const AddMember = () => {
       gender: '',
       marital_status: '',
       spouse_name: '',
-      children_names: '',
       previous_church: '',
       role_in_previous_church: '',
       emergency_contact: '',
@@ -99,7 +96,6 @@ const AddMember = () => {
             form.setValue('gender', member.gender || '');
             form.setValue('marital_status', member.marital_status || '');
             form.setValue('spouse_name', member.spouse_name || '');
-            form.setValue('children_names', member.children_names || '');
             form.setValue('previous_church', member.previous_church || '');
             form.setValue('role_in_previous_church', member.role_in_previous_church || '');
             form.setValue('emergency_contact', member.emergency_contact || '');
@@ -353,19 +349,6 @@ const AddMember = () => {
                     <FormLabel>Spouse Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Spouse Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="children_names"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Children Names</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Children Names" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
