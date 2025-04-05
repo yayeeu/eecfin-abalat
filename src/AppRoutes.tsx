@@ -1,5 +1,6 @@
+
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, Suspense } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./pages/Auth";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -20,9 +21,10 @@ import Profile from "./pages/Profile";
 import ManageMembers from "./pages/ManageMembers";
 import FollowUps from "./pages/FollowUps";
 import AddMember from "./pages/AddMember";
-import MinistryManager from "./pages/MinistryManager";
+import MinistryManager from "./components/MinistryManager";
 import NotFound from "./pages/NotFound";
-import AuthHeader from "./components/AuthHeader";
+import { Suspense } from "react";
+import { useAuth } from "./contexts/AuthContext";
 
 const AppRoutes = () => {
   return (
@@ -41,9 +43,7 @@ const AppRoutes = () => {
             <Route path="/contact" element={<Layout><Contact /></Layout>} />
             <Route path="/get-involved" element={<Layout><GetInvolved /></Layout>} />
             <Route path="/give" element={<Layout><Give /></Layout>} />
-            <Route path="/auth" element={<AuthHeader />}>
-              <Route index element={<Auth />} />
-            </Route>
+            <Route path="/auth" element={<Auth />} />
 
             <Route path="/admin" element={<ProtectedRoutes />}>
               <Route index element={<Admin />} />

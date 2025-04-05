@@ -1,15 +1,21 @@
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Dashboard from '@/components/Dashboard';
 import MinistryManager from '@/components/MinistryManager';
 import AllMembersList from '@/components/AllMembersList';
 import ManageMembers from '@/pages/ManageMembers';
 
 interface AdminContentProps {
-  activeSection: string;
+  activeSection?: string;
+  children?: ReactNode;
 }
 
-const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
+const AdminContent: React.FC<AdminContentProps> = ({ activeSection, children }) => {
+  // If children are provided, render them instead of determining content by activeSection
+  if (children) {
+    return <div className="flex-1 p-6">{children}</div>;
+  }
+  
   const getSectionTitle = () => {
     switch (activeSection) {
       case 'dashboard': return 'Church Dashboard';
@@ -37,14 +43,16 @@ const AdminContent: React.FC<AdminContentProps> = ({ activeSection }) => {
 
   return (
     <div className="flex-1 p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-eecfin-navy">
-          {getSectionTitle()}
-        </h1>
-        <p className="text-gray-500 mt-2">
-          {getSectionDescription()}
-        </p>
-      </div>
+      {activeSection && (
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-eecfin-navy">
+            {getSectionTitle()}
+          </h1>
+          <p className="text-gray-500 mt-2">
+            {getSectionDescription()}
+          </p>
+        </div>
+      )}
       
       {activeSection === 'dashboard' && <Dashboard />}
       {activeSection === 'ministries' && <MinistryManager />}

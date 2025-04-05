@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,7 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import NotFoundPage from "./pages/NotFound";
 import RoleGuard from "@/components/auth/RoleGuard";
 
 // Lazy-loaded components for better initial loading performance
@@ -26,7 +27,6 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Profile = lazy(() => import('./pages/Profile'));
 const ManageMembers = lazy(() => import('./pages/ManageMembers'));
 const AddMember = lazy(() => import('./pages/AddMember'));
-const NotFound = lazy(() => import('./pages/NotFound'));
 const MinistryManager = lazy(() => import('./components/MinistryManager'));
 const FollowUps = lazy(() => import('./pages/FollowUps'));
 
@@ -84,7 +84,7 @@ const App = () => (
             />
 
             {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

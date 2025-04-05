@@ -6,13 +6,13 @@ import MemberPageHeader from '@/components/members/MemberPageHeader';
 
 const FollowUps: React.FC = () => {
   return (
-    <AdminContent>
+    <div className="container mx-auto py-6 px-4">
       <MemberPageHeader 
         title="Follow Ups"
         description="Track and manage follow-ups with members"
       />
       <FollowUpsList />
-    </AdminContent>
+    </div>
   );
 };
 
