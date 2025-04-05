@@ -2,9 +2,8 @@
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { Card, CardContent } from '../ui/card';
-import { GripVertical } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { SimpleMember } from '@/hooks/useElderAssignments';
+import { cn } from '@/lib/utils';
 
 interface MemberCardProps {
   member: SimpleMember;
@@ -29,14 +28,8 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, currentElderId }) => {
         isDragging ? "opacity-50" : "opacity-100"
       )}
     >
-      <CardContent className="p-3 flex items-center gap-3">
-        <div className="text-gray-400">
-          <GripVertical className="h-5 w-5" />
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="font-medium truncate">{member.name || "Unnamed Member"}</div>
-        </div>
+      <CardContent className="p-3">
+        <div className="font-medium truncate">{member.name || "Unnamed Member"}</div>
       </CardContent>
     </Card>
   );

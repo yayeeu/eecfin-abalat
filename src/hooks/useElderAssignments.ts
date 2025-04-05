@@ -67,14 +67,17 @@ export const useElderAssignments = () => {
       if (assignmentsResult.error) throw assignmentsResult.error;
 
       // Process the data
-      setElders(eldersResult.data || []);
+      const eldersData = eldersResult.data || [];
+      setElders(eldersData);
       setMembers(membersResult.data || []);
+
+      console.log("Fetched elders:", eldersData);
 
       // Create initial assignments map
       const assignments: ElderAssignmentsMap = { unassigned: [] };
       
       // Initialize assignments for each elder - ensure all elders appear even with no assignments
-      eldersResult.data?.forEach((elder) => {
+      eldersData.forEach((elder) => {
         assignments[elder.id] = [];
       });
 
@@ -94,6 +97,7 @@ export const useElderAssignments = () => {
       assignments.unassigned = unassignedMembers.map(m => m.id);
 
       setElderAssignments(assignments);
+      console.log("Elder assignments:", assignments);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({

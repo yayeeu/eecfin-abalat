@@ -1,6 +1,5 @@
 
-import React from "react";
-import { Button } from "./ui/button";
+import React, { useEffect } from "react";
 import { useToast } from "./ui/use-toast";
 import AddMemberDialog from "./members/AddMemberDialog";
 import ElderBucketsGrid from "./members/ElderBucketsGrid";
@@ -18,6 +17,10 @@ const MemberManager: React.FC = () => {
   } = useElderAssignments();
   
   const { toast } = useToast();
+
+  useEffect(() => {
+    console.log("MemberManager received elders:", elders);
+  }, [elders]);
 
   const handleMemberDrop = async (memberId: string, targetElderId: string) => {
     try {
@@ -37,6 +40,10 @@ const MemberManager: React.FC = () => {
       }
       
       // Add to target bucket
+      if (!newAssignments[targetElderId]) {
+        newAssignments[targetElderId] = [];
+      }
+      
       if (!newAssignments[targetElderId].includes(memberId)) {
         newAssignments[targetElderId].push(memberId);
       }
@@ -70,6 +77,22 @@ const MemberManager: React.FC = () => {
 
   if (loading) {
     return <div className="p-8">Loading elder and member data...</div>;
+  }
+
+  if (elders.length === 0) {
+    return (
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Manage Member Assignments</h2>
+          <AddMemberDialog onMemberAdded={handleMemberAdded} />
+        </div>
+        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-md">
+          <p className="text-yellow-800">
+            No elders found in the system. Please add members with the elder role to start assigning regular members to elders.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

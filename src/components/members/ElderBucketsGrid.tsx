@@ -23,6 +23,8 @@ const ElderBucketsGrid: React.FC<ElderBucketsGridProps> = ({
     return members.filter(member => memberIds.includes(member.id));
   };
 
+  console.log("Rendering ElderBucketsGrid with elders:", elders);
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
