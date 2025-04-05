@@ -61,7 +61,14 @@ const AppRoutes = () => {
               />
               
               {/* Protected Routes */}
-              <Route element={<RoleGuard><Layout /></RoleGuard>}>
+              <Route element={
+                <RoleGuard>
+                  <Layout>
+                    {/* This is where we need to pass the Outlet as children */}
+                    <Suspense fallback={<PageLoader />} />
+                  </Layout>
+                </RoleGuard>
+              }>
                 {/* Admin Routes */}
                 <Route 
                   path="/admin/*" 
