@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAllMembers, getElderMembers, getMembersByElderId } from '@/lib/memberService';
+import { getAllMembers, getElderMembers } from '@/lib/memberService';
 import { getContactLogsByElderId } from '@/lib/contactLogService';
 import { getCurrentUser } from '@/services/authService';
 import MemberMetrics from './dashboard/MemberMetrics';
@@ -11,35 +11,68 @@ import { Loader2 } from 'lucide-react';
 import { Member } from '@/types/database.types';
 
 const Dashboard: React.FC = () => {
-  const { data: members, isLoading: membersLoading } = useQuery({
-    queryKey: ['members'],
-    queryFn: getAllMembers
-  });
-
-  const { data: elders, isLoading: eldersLoading } = useQuery({
-    queryKey: ['elders'],
-    queryFn: getElderMembers
-  });
-
+  // Fetch current user data first with shorter staleTime
   const { data: currentUser, isLoading: userLoading } = useQuery<Member | null>({
     queryKey: ['currentUser'],
-    queryFn: getCurrentUser
+    queryFn: getCurrentUser,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
   });
 
+  // Only fetch member data after current user is loaded
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ['members'],
+    queryFn: getAllMembers,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    enabled: !userLoading, // Only run when user is loaded
+  });
+
+  // Run these queries in parallel after user is loaded
+  const { data: elders, isLoading: eldersLoading } = useQuery({
+    queryKey: ['elders'],
+    queryFn: getElderMembers,
+    staleTime: 30 * 60 * 1000, // 30 minutes - elders don't change often
+    enabled: !userLoading, // Only run when user is loaded
+  });
+
+  // Only fetch myMembers and contactLogs if current user exists and is an elder
+  const isElder = currentUser?.roles?.name === 'elder';
+  
   const { data: myMembers, isLoading: myMembersLoading } = useQuery({
     queryKey: ['myMembers', currentUser?.id],
-    queryFn: () => currentUser?.id ? getMembersByElderId(currentUser.id) : Promise.resolve([]),
-    enabled: !!currentUser?.id
+    queryFn: () => getMembersByElderId(currentUser!.id),
+    staleTime: 10 * 60 * 1000,
+    enabled: !!currentUser?.id && isElder,
   });
 
   const { data: contactLogs, isLoading: contactLogsLoading } = useQuery({
     queryKey: ['contactLogs', currentUser?.id],
-    queryFn: () => currentUser?.id ? getContactLogsByElderId(currentUser.id) : Promise.resolve([]),
-    enabled: !!currentUser?.id
+    queryFn: () => getContactLogsByElderId(currentUser!.id),
+    staleTime: 5 * 60 * 1000,
+    enabled: !!currentUser?.id && isElder,
   });
 
-  const isLoading = membersLoading || eldersLoading || myMembersLoading || contactLogsLoading || userLoading;
+  // Import getMembersByElderId here for code organization
+  const getMembersByElderId = async (elderId: string) => {
+    try {
+      // Re-use the imported function
+      const result = await import('@/lib/memberService').then(module => 
+        module.getMembersByElderId(elderId)
+      );
+      return result;
+    } catch (error) {
+      console.error('Error fetching members assigned to elder:', error);
+      return [];
+    }
+  };
 
+  // Determine if we're still loading based on query dependencies
+  const isLoading = userLoading || 
+    membersLoading || 
+    eldersLoading || 
+    (isElder && (myMembersLoading || contactLogsLoading));
+
+  // Show skeleton state while loading
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-12">
