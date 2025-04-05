@@ -1,4 +1,3 @@
-
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import { Member } from '@/types/database.types';
 import { v4 as uuidv4 } from 'uuid';
@@ -35,8 +34,49 @@ export const getAllMembers = async () => {
     throw error;
   }
   
-  console.log(`Fetched ${data.length} members from Supabase:`, data);
-  return data as Member[];
+  // Get flagged member IDs from contact_log
+  const { data: flaggedLogs, error: flaggedError } = await supabase!
+    .from('contact_log')
+    .select('member_id')
+    .eq('flagged', true)
+    .order('created_at', { ascending: false });
+  
+  if (flaggedError) {
+    console.error('Error fetching flagged contact logs:', flaggedError);
+    // Continue without flags rather than failing completely
+  }
+  
+  // Create a set of flagged member IDs for efficient lookup
+  const flaggedMemberIds = new Set(
+    flaggedLogs?.map(log => log.member_id) || []
+  );
+  
+  // Get assigned members for current user if logged in
+  let currentUserAssignedMembers = new Set<string>();
+  const { data: { user } } = await supabase!.auth.getUser();
+  
+  if (user) {
+    const { data: currentUserAssignments, error: assignmentError } = await supabase!
+      .from('member_under_elder')
+      .select('member_id')
+      .eq('elder_id', user.id);
+    
+    if (!assignmentError && currentUserAssignments) {
+      currentUserAssignedMembers = new Set(
+        currentUserAssignments.map(assignment => assignment.member_id)
+      );
+    }
+  }
+  
+  // Mark flagged members and assigned members
+  const enhancedMembers = data.map(member => ({
+    ...member,
+    flagged: flaggedMemberIds.has(member.id),
+    assigned_to_current_user: currentUserAssignedMembers.has(member.id)
+  }));
+  
+  console.log(`Fetched ${enhancedMembers.length} members from Supabase:`, enhancedMembers);
+  return enhancedMembers as Member[];
 };
 
 export const getMember = async (id: string) => {

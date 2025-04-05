@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Flag, User, Users } from 'lucide-react';
 
 interface Tab {
   value: string;
   label: string;
+  icon?: React.ReactNode;
 }
 
 interface FilterTabsProps {
@@ -19,9 +21,9 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
   customTabs
 }) => {
   const defaultTabs: Tab[] = [
-    { value: 'all', label: 'All' },
-    { value: 'flagged', label: 'Flagged' },
-    { value: 'my-members', label: 'My Members' }
+    { value: 'all', label: 'All', icon: <Users className="h-4 w-4 mr-1" /> },
+    { value: 'flagged', label: 'Flagged', icon: <Flag className="h-4 w-4 mr-1" color="orange" /> },
+    { value: 'my-members', label: 'My Members', icon: <User className="h-4 w-4 mr-1" /> }
   ];
 
   const tabs = customTabs || defaultTabs;
@@ -36,7 +38,10 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
           className={activeTab === tab.value ? 'font-medium' : ''}
           data-state={activeTab === tab.value ? 'active' : 'inactive'}
         >
-          {tab.label}
+          <div className="flex items-center">
+            {tab.icon}
+            {tab.label}
+          </div>
         </TabsTrigger>
       ))}
     </TabsList>
