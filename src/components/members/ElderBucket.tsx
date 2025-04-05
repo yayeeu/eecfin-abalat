@@ -1,61 +1,69 @@
 
-import React from 'react';
-import { useDrop } from 'react-dnd';
-import MemberCard from './MemberCard';
-import { Member } from '@/types/database.types';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import React from "react";
+import { useDrop } from "react-dnd";
+import { Card, CardContent } from "../ui/card";
+import { Badge } from "../ui/badge";
 
-interface ElderBucketProps {
-  elderId: string | null;
-  elderName: string;
-  members: Member[];
-  onMoveMember: (memberId: string, elderId: string | null) => void;
+interface Member {
+  id: string;
+  name?: string;
+  email?: string;
 }
 
-const ElderBucket: React.FC<ElderBucketProps> = ({ 
-  elderId, 
-  elderName, 
-  members, 
-  onMoveMember 
+interface ElderBucketProps {
+  elderId: string;
+  elderName: string;
+  members: Member[];
+  onMemberDrop: (memberId: string, targetElderId: string) => void;
+}
+
+const ElderBucket: React.FC<ElderBucketProps> = ({
+  elderId,
+  elderName,
+  members,
+  onMemberDrop,
 }) => {
-  // Set up drop target
   const [{ isOver }, drop] = useDrop({
-    accept: 'MEMBER',
+    accept: "MEMBER",
     drop: (item: { id: string }) => {
-      onMoveMember(item.id, elderId);
+      onMemberDrop(item.id, elderId);
     },
-    collect: monitor => ({
-      isOver: !!monitor.isOver()
-    })
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
   });
 
   return (
-    <div 
+    <div
       ref={drop}
-      className={`
-        p-2 rounded-md min-h-[200px] transition-colors
-        ${isOver ? 'bg-blue-50 border-2 border-blue-300' : 'border border-gray-200'}
-      `}
+      className={`p-4 rounded-lg border-2 ${
+        isOver ? "border-primary bg-primary/10" : "border-gray-200"
+      } min-h-[200px] transition-colors`}
     >
-      <h3 className="text-sm font-medium mb-2 text-gray-500">
-        {members.length} {members.length === 1 ? 'member' : 'members'}
-      </h3>
-      
-      <ScrollArea className="h-[300px] pr-4">
-        <div className="space-y-2">
-          {members.length === 0 ? (
-            <p className="text-center text-gray-400 py-6">No members assigned</p>
-          ) : (
-            members.map(member => (
-              <MemberCard 
-                key={member.id}
-                member={member}
-                currentElderId={elderId}
-              />
-            ))
-          )}
-        </div>
-      </ScrollArea>
+      <h3 className="font-semibold text-lg mb-3">{elderName}</h3>
+      <div className="space-y-2">
+        {members.length === 0 ? (
+          <p className="text-gray-500 text-sm italic">No members assigned</p>
+        ) : (
+          members.map((member) => (
+            <Card key={member.id} className="cursor-move">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">
+                      {member.name || "Unnamed Member"}
+                    </p>
+                    <p className="text-sm text-gray-500">{member.email || ""}</p>
+                  </div>
+                  <Badge variant="outline" className="ml-2">
+                    {elderId === "unassigned" ? "Unassigned" : "Assigned"}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 };

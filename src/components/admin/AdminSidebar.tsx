@@ -1,121 +1,143 @@
 
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Home, Settings, BarChart, Image, Users, User, Lock, UserCheck } from 'lucide-react';
-import { Separator } from "@/components/ui/separator";
-import { UserRole } from '@/types/auth.types';
-import {
-  Sidebar, SidebarContent, SidebarHeader, SidebarGroup,
-  SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem,
-  SidebarMenuButton, SidebarFooter
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarGroup, 
+  SidebarGroupContent, 
+  SidebarGroupLabel, 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton 
 } from "@/components/ui/sidebar";
+import { 
+  Users, 
+  Settings, 
+  LayoutDashboard, 
+  BookOpen, 
+  Church, 
+  Image, 
+  Calendar
+} from "lucide-react";
+import RoleGuard from "@/components/auth/RoleGuard";
 
-interface AdminSidebarProps {
-  userRole: UserRole | null;
-  activeSectionState: string;
-  handleMenuClick: (id: string) => void;
-  handleSignOut: () => void;
-}
-
-const AdminSidebar: React.FC<AdminSidebarProps> = ({
-  userRole,
-  activeSectionState,
-  handleMenuClick,
-  handleSignOut
-}) => {
-  // Define which roles can access which sections based on requirements
-  const sectionAccess: Record<string, UserRole[]> = {
-    dashboard: ['admin', 'elder'],
-    slider: ['admin', 'it', 'volunteer'],
-    ministries: ['admin'],
-    members: ['admin', 'elder'],
-    elders: ['admin', 'elder'],
-    manage_members: ['admin', 'elder'],
-    settings: ['admin'],
-    auth: ['admin', 'member', 'elder', 'it', 'volunteer'],
-    register: ['admin'], // Only admin can access member registration
-  };
-
-  // Filter menu items based on user role
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart, roles: ['admin', 'elder'] },
-    { id: 'slider', label: 'Slider Images', icon: Image, roles: ['admin', 'it', 'volunteer'] },
-    { id: 'ministries', label: 'Ministries', icon: Users, roles: ['admin'] },
-    { id: 'members', label: 'All Members', icon: User, roles: ['admin', 'elder'] },
-    { id: 'elders', label: 'Elders', icon: UserCheck, roles: ['admin', 'elder'] },
-    { id: 'manage_members', label: 'Manage Members', icon: Users, url: '/manage-members', roles: ['admin', 'elder'] },
-    { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
-    { id: 'register', label: 'Add Member', icon: Lock, roles: ['admin'] }, // Only for admin
-  ].filter(item => {
-    // Admin can see everything, others only see what they have permission for
-    if (userRole === 'admin') return true;
-    return item.roles.includes(userRole as UserRole);
-  });
-
-  const navigate = useNavigate();
-
-  // Handle menu item click
-  const onMenuItemClick = (item: any) => {
-    if (item.url) {
-      navigate(item.url);
-    } else {
-      handleMenuClick(item.id);
-    }
+const AdminSidebar: React.FC = () => {
+  const location = useLocation();
+  
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
   return (
-    <Sidebar>
-      <SidebarHeader className="px-2">
-        <div className="flex items-center gap-2 py-4">
-          <Settings className="h-6 w-6 text-eecfin-navy" />
-          <span className="text-xl font-bold text-eecfin-navy">Admin Panel</span>
-        </div>
-        <Separator />
-      </SidebarHeader>
-      
+    <Sidebar className="border-r border-r-border min-w-52 max-w-52">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton 
-                    isActive={activeSectionState === item.id}
-                    onClick={() => onMenuItemClick(item)}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
+              <SidebarMenuItem active={isActive("/admin")}>
                 <SidebarMenuButton asChild>
-                  <Link to="/">
-                    <Home className="h-5 w-5" />
-                    <span>Back to Website</span>
+                  <Link to="/admin">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <SidebarMenuButton className="w-full justify-start" onClick={handleSignOut}>
-          <LogOut className="h-5 w-5" />
-          <span>Exit Admin</span>
-        </SidebarMenuButton>
-      </SidebarFooter>
+        <RoleGuard allowedRoles={["admin"]}>
+          <SidebarGroup>
+            <SidebarGroupLabel>Members</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem active={isActive("/admin/manage-members")}>
+                  <SidebarMenuButton asChild>
+                    <Link to="/admin/manage-members">
+                      <Users className="mr-2 h-4 w-4" />
+                      <span>Manage Members</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                
+                <SidebarMenuItem active={isActive("/admin/all-members")}>
+                  <SidebarMenuButton asChild>
+                    <Link to="/admin/all-members">
+                      <Users className="mr-2 h-4 w-4" />
+                      <span>All Members</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </RoleGuard>
+
+        <RoleGuard allowedRoles={["admin", "elder"]}>
+          <SidebarGroup>
+            <SidebarGroupLabel>Leadership</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem active={isActive("/admin/manage-elders")}>
+                  <SidebarMenuButton asChild>
+                    <Link to="/admin/manage-elders">
+                      <Church className="mr-2 h-4 w-4" />
+                      <span>Manage Elders</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                
+                <SidebarMenuItem active={isActive("/admin/my-members")}>
+                  <SidebarMenuButton asChild>
+                    <Link to="/admin/my-members">
+                      <Users className="mr-2 h-4 w-4" />
+                      <span>My Members</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </RoleGuard>
+
+        <RoleGuard allowedRoles={["admin"]}>
+          <SidebarGroup>
+            <SidebarGroupLabel>Content</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem active={isActive("/admin/manage-ministries")}>
+                  <SidebarMenuButton asChild>
+                    <Link to="/admin/manage-ministries">
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      <span>Manage Ministries</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem active={isActive("/admin/manage-slider")}>
+                  <SidebarMenuButton asChild>
+                    <Link to="/admin/manage-slider">
+                      <Image className="mr-2 h-4 w-4" />
+                      <span>Manage Slider</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem active={isActive("/admin/manage-events")}>
+                  <SidebarMenuButton asChild>
+                    <Link to="/admin/manage-events">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      <span>Manage Events</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </RoleGuard>
+      </SidebarContent>
     </Sidebar>
   );
 };
