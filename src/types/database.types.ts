@@ -84,6 +84,7 @@ export interface Member {
   // New fields
   is_baptised?: boolean;
   num_children?: number;
+  member_type_id?: string; // Added missing member_type_id property
   // Geographic coordinates
   latitude?: number;
   longitude?: number;
