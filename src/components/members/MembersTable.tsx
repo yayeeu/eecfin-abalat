@@ -35,6 +35,9 @@ const MembersTable: React.FC<MembersTableProps> = ({
     );
   }
 
+  // Debug log to show how many members are being passed to the component
+  console.log(`MembersTable rendering ${members.length} members:`, members);
+
   return (
     <Table>
       <TableHeader>

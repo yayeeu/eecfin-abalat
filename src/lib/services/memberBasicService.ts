@@ -13,6 +13,7 @@ export const getAllMembers = async () => {
     return Promise.resolve(mockMembers);
   }
   
+  console.log('Fetching members from Supabase');
   const { data, error } = await supabase!
     .from('members')
     .select(`
@@ -21,7 +22,10 @@ export const getAllMembers = async () => {
       assigned_elder:member_under_elder!member_id(
         id,
         elder_id,
-        elder:members!member_under_elder_elder_id_fkey(id, name)
+        elder:members!member_under_elder_elder_id_fkey(
+          id, 
+          name
+        )
       )
     `)
     .order('name');
@@ -31,6 +35,7 @@ export const getAllMembers = async () => {
     throw error;
   }
   
+  console.log(`Fetched ${data.length} members from Supabase:`, data);
   return data as Member[];
 };
 

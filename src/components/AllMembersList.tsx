@@ -41,15 +41,19 @@ const AllMembersList = ({ onMemberSelect, readOnly = false }: AllMembersListProp
     }
   });
 
+  console.log('Members data in AllMembersList:', members);
+
   // Filter members based on search term
   const filteredMembers = searchTerm 
     ? members.filter(member => 
-        member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.phone?.includes(searchTerm) ||
-        member.address?.toLowerCase().includes(searchTerm.toLowerCase())
+        (member.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (member.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (member.phone || '').includes(searchTerm) ||
+        (member.address?.toLowerCase() || '').includes(searchTerm.toLowerCase())
       )
     : members;
+
+  console.log('Filtered members:', filteredMembers);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
