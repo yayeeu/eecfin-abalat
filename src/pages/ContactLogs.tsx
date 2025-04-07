@@ -1,7 +1,7 @@
-
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getContactLogs } from '@/lib/contactLogService';
+import { getAllMembers } from '@/lib/memberService';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
@@ -20,14 +20,14 @@ import {
   Mail, 
   UserPlus, 
   HelpCircle, 
-  CalendarDays 
+  CalendarDays,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ContactLogForm from '@/components/contact/ContactLogForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 
-// Helper function to group contact logs by time periods
 const groupContactLogsByTimePeriod = (logs: ContactLog[]) => {
   const now = new Date();
   const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -59,7 +59,6 @@ const groupContactLogsByTimePeriod = (logs: ContactLog[]) => {
   };
 };
 
-// Helper function to group contact logs by elder
 const groupContactLogsByElder = (logs: ContactLog[]) => {
   const groupedByElder: Record<string, ContactLog[]> = {};
   
@@ -85,11 +84,10 @@ const ContactLogs: React.FC = () => {
   const [selectedLog, setSelectedLog] = useState<ContactLog | null>(null);
   const [selectedElder, setSelectedElder] = useState<string | null>(null);
 
-  // Query to fetch all contact logs
   const { 
     data: logs = [], 
-    isLoading, 
-    isError,
+    isLoading: logsLoading, 
+    isError: logsError,
     refetch 
   } = useQuery({
     queryKey: ['contact-logs'],
@@ -106,19 +104,36 @@ const ContactLogs: React.FC = () => {
     }
   });
 
-  // Process the logs for display
+  const {
+    data: members = [],
+    isLoading: membersLoading,
+    isError: membersError
+  } = useQuery({
+    queryKey: ['all-members'],
+    queryFn: getAllMembers,
+    meta: {
+      onError: (error: any) => {
+        console.error('Error fetching members:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load members data. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    }
+  });
+
   const processedData = useMemo(() => {
-    // First filter by tab selection
     let filteredLogs = logs;
     
     if (activeTab === 'flagged') {
       filteredLogs = filteredLogs.filter(log => log.flagged === true);
     } else if (activeTab === 'my-logs') {
-      // In a real implementation, this would filter by the current user's logs
       filteredLogs = filteredLogs.filter(log => log.elder_id === 'current-user-id');
+    } else if (activeTab === 'no-contact') {
+      filteredLogs = logs;
     }
     
-    // Then apply search filter if there's a search term
     if (searchTerm) {
       filteredLogs = filteredLogs.filter(log => 
         (log.notes?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -128,10 +143,8 @@ const ContactLogs: React.FC = () => {
       );
     }
 
-    // Group by time period first
     const byTimePeriod = groupContactLogsByTimePeriod(filteredLogs);
     
-    // For each time period, group by elder
     const groupedData: Record<string, Record<string, ContactLog[]>> = {};
     
     Object.entries(byTimePeriod).forEach(([period, periodLogs]) => {
@@ -140,13 +153,25 @@ const ContactLogs: React.FC = () => {
       }
     });
     
+    const membersWithNoLogs: Member[] = [];
+    
+    if (members.length > 0 && logs.length > 0) {
+      const contactedMemberIds = new Set(logs.map(log => log.member_id));
+      
+      members.forEach(member => {
+        if (!contactedMemberIds.has(member.id)) {
+          membersWithNoLogs.push(member);
+        }
+      });
+    }
+    
     return {
       filteredLogs,
-      groupedData
+      groupedData,
+      membersWithNoLogs,
     };
-  }, [logs, searchTerm, activeTab]);
+  }, [logs, members, searchTerm, activeTab]);
   
-  // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
@@ -162,19 +187,21 @@ const ContactLogs: React.FC = () => {
     refetch();
   };
 
-  // View member details when clicking on a member name
   const handleMemberClick = (memberId: string) => {
     navigate(`/admin/edit-member/${memberId}`);
   };
 
-  // Get appropriate label for count display
   const getActiveTabLabel = () => {
     switch (activeTab) {
       case 'flagged': return 'flagged contacts';
       case 'my-logs': return 'of your contact logs';
+      case 'no-contact': return 'members without contact history';
       default: return 'all';
     }
   };
+
+  const isLoading = logsLoading || membersLoading;
+  const isError = logsError || membersError;
 
   if (isLoading) {
     return (
@@ -214,7 +241,8 @@ const ContactLogs: React.FC = () => {
             customTabs={[
               { value: 'all', label: 'All Logs' },
               { value: 'flagged', label: 'Flagged' },
-              { value: 'my-logs', label: 'My Contact Logs' }
+              { value: 'my-logs', label: 'My Contact Logs' },
+              { value: 'no-contact', label: 'No Contact History' }
             ]}
           />
 
@@ -225,6 +253,76 @@ const ContactLogs: React.FC = () => {
                 <Button onClick={() => refetch()} className="mt-4">
                   Retry
                 </Button>
+              </div>
+            ) : activeTab === 'no-contact' ? (
+              <div className="space-y-8">
+                <div key="no-contact" className="mb-8">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center">
+                    <Clock className="mr-2 h-5 w-5" />
+                    Contacted Long Time Ago
+                  </h2>
+                  
+                  {processedData.membersWithNoLogs.length > 0 ? (
+                    <Card className="mb-4">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Members Without Contact History</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Member</TableHead>
+                              <TableHead>Contact Info</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {processedData.membersWithNoLogs.map(member => (
+                              <TableRow key={member.id}>
+                                <TableCell>
+                                  <button 
+                                    className="text-blue-600 hover:underline font-medium"
+                                    onClick={() => member.id && handleMemberClick(member.id)}
+                                  >
+                                    {member.name || 'Unknown Member'}
+                                  </button>
+                                </TableCell>
+                                <TableCell>
+                                  {member.email && <div className="text-sm">{member.email}</div>}
+                                  {member.phone && <div className="text-sm">{member.phone}</div>}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    No Contact
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      setIsFormOpen(true);
+                                      setSelectedLog(null);
+                                      setSelectedElder(null);
+                                    }}
+                                  >
+                                    Add Contact
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-50 rounded">
+                      <p className="text-gray-500">All members have been contacted</p>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : processedData.filteredLogs.length > 0 ? (
               <div className="space-y-8">
@@ -237,7 +335,6 @@ const ContactLogs: React.FC = () => {
                       </h2>
                       
                       {Object.entries(elderGroups).map(([elderId, elderLogs]) => {
-                        // Get the elder name from the first log
                         const elderName = elderLogs[0]?.elder?.name || 'Unknown Elder';
                         return (
                           <Card key={`${period}-${elderId}`} className="mb-4">
@@ -304,7 +401,10 @@ const ContactLogs: React.FC = () => {
             
             <div className="mt-4 flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                Showing {processedData.filteredLogs.length} {getActiveTabLabel()} contact logs
+                {activeTab === 'no-contact' 
+                  ? `Showing ${processedData.membersWithNoLogs.length} members without contact history`
+                  : `Showing ${processedData.filteredLogs.length} ${getActiveTabLabel()} contact logs`
+                }
               </p>
             </div>
           </TabsContent>
@@ -321,6 +421,7 @@ const ContactLogs: React.FC = () => {
           
           <ContactLogForm
             initialData={selectedLog || undefined}
+            memberId={activeTab === 'no-contact' && selectedElder ? undefined : undefined}
             onSuccess={closeForm}
             onCancel={closeForm}
           />
