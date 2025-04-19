@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ContactLog } from '@/types/database.types';
 import { 
@@ -14,7 +13,8 @@ import {
   Users,
   CalendarDays,
   UserCheck,
-  Clock
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 
 interface Elder {
@@ -51,7 +51,6 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
           'More than 4 weeks': []
         };
 
-        // Group logs by time period
         elder.logs.forEach(log => {
           const logDate = new Date(log.created_at || '');
           const now = new Date();
@@ -65,7 +64,6 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
           else groupedLogs['More than 4 weeks'].push(log);
         });
 
-        // Add members without logs to "More than 4 weeks"
         const loggedMemberIds = new Set(elder.logs.map(log => log.member_id));
         const membersWithoutLogs = elder.assignedMembers.filter(
           member => !loggedMemberIds.has(member.id)
@@ -118,31 +116,18 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
                             )}
                             <h4 className="font-medium text-sm">{period}</h4>
                           </div>
-                          <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
                             {logs.map(log => (
-                              <div 
+                              <button
                                 key={log.id}
-                                className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                                onClick={() => log.member_id && onMemberClick?.(log.member_id)}
+                                className="inline-flex items-center px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-sm transition-colors"
                               >
-                                <UserCheck className="h-4 w-4 text-muted-foreground" />
-                                {log.member_id && onMemberClick ? (
-                                  <button 
-                                    className="text-sm text-blue-600 hover:underline"
-                                    onClick={() => onMemberClick(log.member_id)}
-                                  >
-                                    {log.member?.name || 'Unknown Member'}
-                                  </button>
-                                ) : (
-                                  <span className="text-sm">
-                                    {log.member?.name || 'Unknown Member'}
-                                  </span>
-                                )}
+                                {log.member?.name || 'Unknown Member'}
                                 {log.flagged && (
-                                  <Badge variant="secondary" className="ml-auto">
-                                    Flagged
-                                  </Badge>
+                                  <AlertCircle className="h-3 w-3 ml-1 text-yellow-500" />
                                 )}
-                              </div>
+                              </button>
                             ))}
                           </div>
                         </CardContent>
