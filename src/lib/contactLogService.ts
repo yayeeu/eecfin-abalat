@@ -1,3 +1,4 @@
+
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import { ContactLog } from '@/types/database.types';
 import { v4 as uuidv4 } from 'uuid';
@@ -65,14 +66,27 @@ export const getContactLogs = async (filters?: {
           member:members!contact_log_member_id_fkey(
             id,
             name,
-            role
+            role_id(
+              id,
+              name
+            )
           )
         `)
         .eq('elder_id', currentUser.user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Transform the data to include a "role" field based on role_id.name
+      const transformedData = data.map(log => ({
+        ...log,
+        member: log.member ? {
+          ...log.member,
+          role: log.member.role_id?.name || 'regular'
+        } : null
+      }));
+      
+      return transformedData;
     }
 
     // First get all elders and their assigned members
@@ -85,7 +99,11 @@ export const getContactLogs = async (filters?: {
         member_assignments:member_under_elder!elder_id(
           member:members!member_under_elder_member_id_fkey(
             id,
-            name
+            name,
+            role_id(
+              id,
+              name
+            )
           )
         ),
         contact_logs:contact_log!contact_log_elder_id_fkey(
@@ -98,7 +116,11 @@ export const getContactLogs = async (filters?: {
           updated_at,
           member:members!contact_log_member_id_fkey(
             id,
-            name
+            name,
+            role_id(
+              id,
+              name
+            )
           )
         )
       `)
@@ -114,8 +136,21 @@ export const getContactLogs = async (filters?: {
     
     // Format data to include all assigned members, even those without logs
     const formattedData = elders.map(elder => {
-      const assignedMembers = elder.member_assignments?.map(assignment => assignment.member) || [];
-      const logs = elder.contact_logs || [];
+      const assignedMembers = elder.member_assignments?.map(assignment => {
+        return {
+          id: assignment.member.id,
+          name: assignment.member.name,
+          role: assignment.member.role_id?.name || 'regular'
+        };
+      }) || [];
+      
+      const logs = elder.contact_logs?.map(log => ({
+        ...log,
+        member: log.member ? {
+          ...log.member,
+          role: log.member.role_id?.name || 'regular'
+        } : null
+      })) || [];
       
       return {
         id: elder.id,

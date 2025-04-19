@@ -48,6 +48,7 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
   elders,
   onMemberClick 
 }) => {
+  // Define time periods for grouping
   const timePeriods = {
     'This week': [],
     'Last week': [],
@@ -84,7 +85,7 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
 
       <Accordion type="multiple" className="space-y-4">
         {sortedElders.map((elder) => {
-          const groupedLogs: Record<string, Array<{ id: string; name: string; role?: string; logDate?: Date | null }>> = {
+          const groupedMembers: Record<string, Array<{ id: string; name: string; role?: string; logDate?: Date | null }>> = {
             'This week': [],
             'Last week': [],
             '2 Weeks ago': [],
@@ -113,7 +114,7 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
 
             if (!processedMembers.has(log.member_id)) {
               processedMembers.add(log.member_id);
-              groupedLogs[period].push({
+              groupedMembers[period].push({
                 id: log.member_id,
                 name: log.member?.name || 'Unknown Member',
                 role: log.member?.role,
@@ -122,10 +123,10 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
             }
           });
 
-          // Then, add members without logs or with old logs to "More than 4 weeks"
+          // Then, add members without logs to "More than 4 weeks"
           elder.assignedMembers.forEach(member => {
             if (!processedMembers.has(member.id)) {
-              groupedLogs['More than 4 weeks'].push({
+              groupedMembers['More than 4 weeks'].push({
                 id: member.id,
                 name: member.name,
                 role: member.role,
@@ -157,7 +158,7 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
               <AccordionContent>
                 <ScrollArea className="h-[400px] px-4 py-2">
                   <div className="space-y-4">
-                    {Object.entries(groupedLogs).map(([period, members]) => (
+                    {Object.entries(groupedMembers).map(([period, members]) => (
                       <Card key={`${elder.id}-${period}`}>
                         <CardContent className="pt-6">
                           <div className="flex items-center gap-2 mb-3">

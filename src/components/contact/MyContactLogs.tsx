@@ -105,7 +105,7 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
       </div>
 
       <Accordion type="multiple" className="space-y-4">
-        {groupedLogs && Object.entries(groupedLogs).map(([memberType, logs]) => (
+        {Object.entries(groupedLogs).map(([memberType, logs]) => (
           <AccordionItem
             key={memberType}
             value={memberType}

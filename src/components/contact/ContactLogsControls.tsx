@@ -8,12 +8,7 @@ interface ContactLogsControlsProps {
   onViewModeChange: (mode: string) => void;
 }
 
-const ContactLogsControls: React.FC<ContactLogsControlsProps> = ({
-  searchTerm,
-  onSearchChange,
-  viewMode,
-  onViewModeChange,
-}) => {
+const ContactLogsControls: React.FC<ContactLogsControlsProps> = () => {
   // Return empty div as we're removing the controls
   return <div className="mb-4"></div>;
 };
