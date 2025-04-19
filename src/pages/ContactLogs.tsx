@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -9,18 +8,14 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ContactLog } from '@/types/database.types';
 import FilterTabs from '@/components/members/FilterTabs';
 import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import GroupedContactLogs from '@/components/contact/GroupedContactLogs';
 import ContactLogsHeader from '@/components/contact/ContactLogsHeader';
-import ContactLogsControls from '@/components/contact/ContactLogsControls';
-import ContactLogDialog from '@/components/contact/ContactLogDialog';
 import MyContactLogs from '@/components/contact/MyContactLogs';
+import ContactLogDialog from '@/components/contact/ContactLogDialog';
 
 const ContactLogs: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState('list');
   const [activeTab, setActiveTab] = useState('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<ContactLog | null>(null);
@@ -64,10 +59,6 @@ const ContactLogs: React.FC = () => {
     }
   });
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
   const handleAddNew = () => {
     setSelectedLog(null);
     setIsFormOpen(true);
@@ -90,7 +81,6 @@ const ContactLogs: React.FC = () => {
     }
   };
 
-  // Fixed: Use the correct loading variable - logsLoading instead of isLoading
   if (logsLoading) {
     return (
       <div className="flex justify-center items-center p-12">
@@ -105,13 +95,6 @@ const ContactLogs: React.FC = () => {
       <ContactLogsHeader onAddNew={handleAddNew} />
       
       <div className="space-y-4">
-        <ContactLogsControls
-          searchTerm={searchTerm}
-          onSearchChange={handleSearchChange}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
-
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <FilterTabs 
             activeTab={activeTab} 
@@ -134,7 +117,7 @@ const ContactLogs: React.FC = () => {
             
             <div className="mt-4 flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                Showing {0} {getActiveTabLabel()} contact logs
+                Showing {elderData.length} {getActiveTabLabel()} contact logs
               </p>
             </div>
           </TabsContent>
