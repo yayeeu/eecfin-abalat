@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
@@ -23,7 +22,6 @@ const CustomHeader = () => {
             </Link>
           </div>
 
-          {/* Mobile menu button */}
           <div className="flex md:hidden">
             <Button
               variant="ghost"
@@ -35,7 +33,6 @@ const CustomHeader = () => {
             </Button>
           </div>
 
-          {/* Desktop menu */}
           {user && (
             <div className="hidden md:flex md:items-center md:space-x-6">
               <Link 
@@ -63,7 +60,6 @@ const CustomHeader = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isMenuOpen && user && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
