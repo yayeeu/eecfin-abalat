@@ -29,7 +29,7 @@ const memberTypeColors = {
 const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
   const { toast } = useToast();
   
-  const { data: logs, isLoading, isError } = useQuery({
+  const { data: logs = [], isLoading, isError } = useQuery({
     queryKey: ['my-contact-logs'],
     queryFn: () => getContactLogs({ myLogs: true }),
     meta: {
@@ -60,8 +60,8 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
     );
   }
 
-  // Group logs by member type
-  const groupedLogs = logs?.reduce((acc: Record<string, any[]>, log) => {
+  // Group logs by member type - fixed TypeScript error by explicitly typing logs as any[] and adding type assertions
+  const groupedLogs = logs.reduce((acc: Record<string, any[]>, log: any) => {
     const memberType = log.member?.role || 'regular';
     if (!acc[memberType]) {
       acc[memberType] = [];
@@ -105,7 +105,7 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
               <div className="space-y-4">
-                {logs.map((log) => (
+                {logs.map((log: any) => (
                   <Card key={log.id} className="cursor-pointer hover:shadow-md transition-shadow">
                     <CardContent 
                       className="p-4"

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -89,7 +90,8 @@ const ContactLogs: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  // Fixed: Use the correct loading variable - logsLoading instead of isLoading
+  if (logsLoading) {
     return (
       <div className="flex justify-center items-center p-12">
         <Loader2 className="h-8 w-8 animate-spin text-eecfin-navy" />
