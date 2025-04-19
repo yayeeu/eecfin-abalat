@@ -30,6 +30,7 @@ export const getContactLogs = async (filters?: {
   elderId?: string; 
   memberId?: string;
   flagged?: boolean;
+  myLogs?: boolean;
 }) => {
   if (!isSupabaseConfigured()) {
     console.log('Using mock data for contact logs');
@@ -43,64 +44,92 @@ export const getContactLogs = async (filters?: {
       filteredLogs = filteredLogs.filter(log => log.member_id === filters.memberId);
     }
     
-    if (filters?.flagged !== undefined) {
-      filteredLogs = filteredLogs.filter(log => log.flagged === filters.flagged);
+    if (filters?.myLogs) {
+      // In mock mode, just return all logs for now
+      return Promise.resolve(filteredLogs);
     }
     
     return Promise.resolve(filteredLogs);
   }
   
-  // First get all elders and their assigned members
-  let query = supabase!
-    .from('members')
-    .select(`
-      id,
-      name,
-      role_id,
-      member_assignments:member_under_elder!elder_id(
-        member:members!member_under_elder_member_id_fkey(
-          id,
-          name
-        )
-      ),
-      contact_logs:contact_log!contact_log_elder_id_fkey(
+  try {
+    // If we're fetching my logs, we need a different query
+    if (filters?.myLogs) {
+      const { data: currentUser } = await supabase!.auth.getUser();
+      
+      const { data, error } = await supabase!
+        .from('contact_log')
+        .select(`
+          *,
+          elder:members!contact_log_elder_id_fkey(id, name),
+          member:members!contact_log_member_id_fkey(
+            id,
+            name,
+            role
+          )
+        `)
+        .eq('elder_id', currentUser.user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    }
+
+    // First get all elders and their assigned members
+    let query = supabase!
+      .from('members')
+      .select(`
         id,
-        member_id,
-        contact_type,
-        notes,
-        flagged,
-        created_at,
-        updated_at,
-        member:members!contact_log_member_id_fkey(
+        name,
+        role_id,
+        member_assignments:member_under_elder!elder_id(
+          member:members!member_under_elder_member_id_fkey(
+            id,
+            name
+          )
+        ),
+        contact_logs:contact_log!contact_log_elder_id_fkey(
           id,
-          name
+          member_id,
+          contact_type,
+          notes,
+          flagged,
+          created_at,
+          updated_at,
+          member:members!contact_log_member_id_fkey(
+            id,
+            name
+          )
         )
-      )
-    `)
-    .eq('role_id', (await getRoleIdByName('elder'))) // Using a function to get the elder role ID
-    .order('name');
-  
-  const { data: elders, error: eldersError } = await query;
-  
-  if (eldersError) {
-    console.error('Error fetching elders and contact logs:', eldersError);
-    throw eldersError;
-  }
-  
-  // Format data to include all assigned members, even those without logs
-  const formattedData = elders.map(elder => {
-    const assignedMembers = elder.member_assignments?.map(assignment => assignment.member) || [];
-    const logs = elder.contact_logs || [];
+      `)
+      .eq('role_id', (await getRoleIdByName('elder'))) // Using a function to get the elder role ID
+      .order('name');
     
-    return {
-      id: elder.id,
-      name: elder.name,
-      logs,
-      assignedMembers
-    };
-  });
-  
-  return formattedData;
+    const { data: elders, error: eldersError } = await query;
+    
+    if (eldersError) {
+      console.error('Error fetching elders and contact logs:', eldersError);
+      throw eldersError;
+    }
+    
+    // Format data to include all assigned members, even those without logs
+    const formattedData = elders.map(elder => {
+      const assignedMembers = elder.member_assignments?.map(assignment => assignment.member) || [];
+      const logs = elder.contact_logs || [];
+      
+      return {
+        id: elder.id,
+        name: elder.name,
+        logs,
+        assignedMembers
+      };
+    });
+    
+    return formattedData;
+  } catch (error) {
+    console.error('Error fetching contact logs:', error);
+    throw error;
+  }
 };
 
 // Helper function to get role ID by name

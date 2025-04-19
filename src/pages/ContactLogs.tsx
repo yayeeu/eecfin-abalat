@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import GroupedContactLogs from '@/components/contact/GroupedContactLogs';
 import ContactLogsHeader from '@/components/contact/ContactLogsHeader';
 import ContactLogsControls from '@/components/contact/ContactLogsControls';
-import NoContactMembers from '@/components/contact/NoContactMembers';
 import ContactLogDialog from '@/components/contact/ContactLogDialog';
+import MyContactLogs from '@/components/contact/MyContactLogs';
 
 const ContactLogs: React.FC = () => {
   const { toast } = useToast();
@@ -84,13 +84,10 @@ const ContactLogs: React.FC = () => {
 
   const getActiveTabLabel = () => {
     switch (activeTab) {
-      case 'flagged': return 'flagged contacts';
       case 'my-logs': return 'of your contact logs';
       default: return 'all';
     }
   };
-
-  const isLoading = logsLoading;
 
   if (isLoading) {
     return (
@@ -119,24 +116,18 @@ const ContactLogs: React.FC = () => {
             onTabChange={setActiveTab} 
             customTabs={[
               { value: 'all', label: 'All Logs' },
-              { value: 'flagged', label: 'Flagged' },
               { value: 'my-logs', label: 'My Contact Logs' }
             ]}
           />
 
           <TabsContent value={activeTab} className="mt-0">
-            {logsError ? (
-              <div className="text-center py-8">
-                <p className="text-red-500">Error loading contact logs</p>
-                <Button onClick={() => refetch()} className="mt-4">
-                  Retry
-                </Button>
-              </div>
-            ) : (
+            {activeTab === 'all' ? (
               <GroupedContactLogs 
                 elders={elderData}
                 onMemberClick={handleMemberClick}
               />
+            ) : (
+              <MyContactLogs onMemberClick={handleMemberClick} />
             )}
             
             <div className="mt-4 flex justify-between items-center">
