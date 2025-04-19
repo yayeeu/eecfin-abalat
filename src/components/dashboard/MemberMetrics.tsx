@@ -1,8 +1,11 @@
-
 import React from 'react';
 import { Member } from '@/types/database.types';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserCheck } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+
+// Import the function to get member types
+import { getMemberTypes } from '@/lib/services/memberTypeService';
 
 interface StatCardProps {
   label: string;
@@ -53,16 +56,24 @@ const MemberMetrics: React.FC<{
   members: Member[], 
   myMembers?: Member[] 
 }> = ({ members, myMembers = [] }) => {
+  // Fetch member types from the database
+  const { data: memberTypes } = useQuery({
+    queryKey: ['memberTypes'],
+    queryFn: getMemberTypes,
+    staleTime: 30 * 60 * 1000, // 30 minutes cache
+  });
+
   // Group members by their member_type_id
-  const groupMembersByType = (membersList: Member[]): MemberTypeCount[] => {
+  const groupMembersByType = (membersList: Member[]) => {
     const counts: Record<string, { count: number; name: string }> = {};
     
     // Count members by type
     membersList.forEach(member => {
       const typeId = member.member_type_id || 'unknown';
       if (!counts[typeId]) {
-        // Try to use the member type name from the mapping, or fallback to a formatted typeId
-        const typeName = memberTypeNames[typeId] || 
+        // Find the name of the member type from the fetched types
+        const memberType = memberTypes?.find(type => type.id === typeId);
+        const typeName = memberType?.name || 
                           (typeId === 'unknown' ? 'Unknown' : 
                           typeId.charAt(0).toUpperCase() + typeId.slice(1));
         counts[typeId] = { count: 0, name: typeName };
@@ -73,7 +84,7 @@ const MemberMetrics: React.FC<{
     // Convert to array format
     return Object.entries(counts).map(([id, { count, name }]) => ({
       id,
-      name, // Use the proper name lookup
+      name,
       count,
       color: memberTypeColors[id.toLowerCase()] || memberTypeColors.default
     }));

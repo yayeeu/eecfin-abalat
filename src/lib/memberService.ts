@@ -1,4 +1,3 @@
-
 // Re-export all member services from their respective files
 export {
   getAllMembers,
@@ -38,3 +37,7 @@ export {
   getRoleById,
   updateMemberRole
 } from '@/lib/services/roleService';
+
+export {
+  getMemberTypes
+} from '@/lib/services/memberTypeService';
