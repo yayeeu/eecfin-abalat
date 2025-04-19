@@ -29,52 +29,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import GroupedContactLogs from '@/components/contact/GroupedContactLogs';
 
-const groupContactLogsByTimePeriod = (logs: ContactLog[]) => {
-  const now = new Date();
-  const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
-  const lastWeekStart = subWeeks(thisWeekStart, 1);
-  const twoWeeksAgoStart = subWeeks(thisWeekStart, 2);
-  const fourWeeksAgoStart = subWeeks(thisWeekStart, 4);
-
-  return {
-    'This week': logs.filter(log => {
-      const logDate = new Date(log.created_at || '');
-      return isWithinInterval(logDate, { start: thisWeekStart, end: now });
-    }),
-    'Last week': logs.filter(log => {
-      const logDate = new Date(log.created_at || '');
-      return isWithinInterval(logDate, { start: lastWeekStart, end: thisWeekStart });
-    }),
-    '2 Weeks ago': logs.filter(log => {
-      const logDate = new Date(log.created_at || '');
-      return isWithinInterval(logDate, { start: twoWeeksAgoStart, end: lastWeekStart });
-    }),
-    '4 Weeks ago': logs.filter(log => {
-      const logDate = new Date(log.created_at || '');
-      return isWithinInterval(logDate, { start: fourWeeksAgoStart, end: twoWeeksAgoStart });
-    }),
-    'Older': logs.filter(log => {
-      const logDate = new Date(log.created_at || '');
-      return logDate < fourWeeksAgoStart;
-    })
-  };
-};
-
-const groupContactLogsByElder = (logs: ContactLog[]) => {
-  const groupedByElder: Record<string, ContactLog[]> = {};
-  
-  logs.forEach(log => {
-    if (log.elder_id && log.elder?.name) {
-      if (!groupedByElder[log.elder_id]) {
-        groupedByElder[log.elder_id] = [];
-      }
-      groupedByElder[log.elder_id].push(log);
-    }
-  });
-
-  return groupedByElder;
-};
-
 const ContactLogs: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -86,7 +40,7 @@ const ContactLogs: React.FC = () => {
   const [selectedElder, setSelectedElder] = useState<string | null>(null);
 
   const { 
-    data: logs = [], 
+    data: elderData = [], 
     isLoading: logsLoading, 
     isError: logsError,
     refetch 
@@ -124,55 +78,6 @@ const ContactLogs: React.FC = () => {
     }
   });
 
-  const processedData = useMemo(() => {
-    let filteredLogs = logs;
-    
-    if (activeTab === 'flagged') {
-      filteredLogs = filteredLogs.filter(log => log.flagged === true);
-    } else if (activeTab === 'my-logs') {
-      filteredLogs = filteredLogs.filter(log => log.elder_id === 'current-user-id');
-    } else if (activeTab === 'no-contact') {
-      filteredLogs = logs;
-    }
-    
-    if (searchTerm) {
-      filteredLogs = filteredLogs.filter(log => 
-        (log.notes?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (log.contact_type?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (log.elder?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (log.member?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-      );
-    }
-
-    const byTimePeriod = groupContactLogsByTimePeriod(filteredLogs);
-    
-    const groupedData: Record<string, Record<string, ContactLog[]>> = {};
-    
-    Object.entries(byTimePeriod).forEach(([period, periodLogs]) => {
-      if (periodLogs.length > 0) {
-        groupedData[period] = groupContactLogsByElder(periodLogs);
-      }
-    });
-    
-    const membersWithNoLogs: Member[] = [];
-    
-    if (members.length > 0 && logs.length > 0) {
-      const contactedMemberIds = new Set(logs.map(log => log.member_id));
-      
-      members.forEach(member => {
-        if (!contactedMemberIds.has(member.id)) {
-          membersWithNoLogs.push(member);
-        }
-      });
-    }
-    
-    return {
-      filteredLogs,
-      groupedData,
-      membersWithNoLogs,
-    };
-  }, [logs, members, searchTerm, activeTab]);
-  
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
@@ -262,7 +167,7 @@ const ContactLogs: React.FC = () => {
                     Contacted Long Time Ago
                   </h2>
                   
-                  {processedData.membersWithNoLogs.length > 0 ? (
+                  {members.length > 0 ? (
                     <Card className="mb-4">
                       <CardHeader>
                         <CardTitle className="text-lg">Members Without Contact History</CardTitle>
@@ -278,7 +183,7 @@ const ContactLogs: React.FC = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {processedData.membersWithNoLogs.map(member => (
+                            {members.map(member => (
                               <TableRow key={member.id}>
                                 <TableCell>
                                   <button 
@@ -324,29 +229,18 @@ const ContactLogs: React.FC = () => {
                   )}
                 </div>
               </div>
-            ) : processedData.filteredLogs.length > 0 ? (
+            ) : (
               <GroupedContactLogs 
-                groupedData={processedData.groupedData} 
+                elders={elderData}
                 onMemberClick={handleMemberClick}
               />
-            ) : (
-              <div className="text-center py-8 bg-gray-50 rounded">
-                <p className="text-gray-500">No contact logs found</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={handleAddNew}
-                >
-                  Add First Contact Log
-                </Button>
-              </div>
             )}
             
             <div className="mt-4 flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
                 {activeTab === 'no-contact' 
-                  ? `Showing ${processedData.membersWithNoLogs.length} members without contact history`
-                  : `Showing ${processedData.filteredLogs.length} ${getActiveTabLabel()} contact logs`
+                  ? `Showing ${members.length} members without contact history`
+                  : `Showing ${0} ${getActiveTabLabel()} contact logs`
                 }
               </p>
             </div>

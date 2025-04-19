@@ -31,7 +31,6 @@ export const getContactLogs = async (filters?: {
   memberId?: string;
   flagged?: boolean;
 }) => {
-  // If Supabase is not configured, return mock data
   if (!isSupabaseConfigured()) {
     console.log('Using mock data for contact logs');
     let filteredLogs = [...mockContactLogs];
@@ -51,39 +50,60 @@ export const getContactLogs = async (filters?: {
     return Promise.resolve(filteredLogs);
   }
   
+  // First get all elders and their assigned members
   let query = supabase!
-    .from('contact_log')
+    .from('members')
     .select(`
-      *,
-      elder:members!contact_log_elder_id_fkey(id, name),
-      member:members!contact_log_member_id_fkey(id, name)
+      id,
+      name,
+      role,
+      member_assignments:member_under_elder!elder_id(
+        member:members!member_under_elder_member_id_fkey(
+          id,
+          name
+        )
+      ),
+      contact_logs:contact_log!contact_log_elder_id_fkey(
+        id,
+        member_id,
+        contact_type,
+        notes,
+        flagged,
+        created_at,
+        updated_at,
+        member:members!contact_log_member_id_fkey(
+          id,
+          name
+        )
+      )
     `)
-    .order('created_at', { ascending: false });
+    .eq('role', 'elder')
+    .order('name');
   
-  if (filters?.elderId) {
-    query = query.eq('elder_id', filters.elderId);
+  const { data: elders, error: eldersError } = await query;
+  
+  if (eldersError) {
+    console.error('Error fetching elders and contact logs:', eldersError);
+    throw eldersError;
   }
   
-  if (filters?.memberId) {
-    query = query.eq('member_id', filters.memberId);
-  }
+  // Format data to include all assigned members, even those without logs
+  const formattedData = elders.map(elder => {
+    const assignedMembers = elder.member_assignments?.map(assignment => assignment.member) || [];
+    const logs = elder.contact_logs || [];
+    
+    return {
+      id: elder.id,
+      name: elder.name,
+      logs,
+      assignedMembers
+    };
+  });
   
-  if (filters?.flagged !== undefined) {
-    query = query.eq('flagged', filters.flagged);
-  }
-  
-  const { data, error } = await query;
-  
-  if (error) {
-    console.error('Error fetching contact logs:', error);
-    throw error;
-  }
-  
-  return data as ContactLog[];
+  return formattedData;
 };
 
 export const getContactLog = async (id: string) => {
-  // If Supabase is not configured, return mock data
   if (!isSupabaseConfigured()) {
     const log = mockContactLogs.find(l => l.id === id);
     if (!log) {
@@ -111,7 +131,6 @@ export const getContactLog = async (id: string) => {
 };
 
 export const createContactLog = async (log: Omit<ContactLog, 'id' | 'created_at' | 'updated_at'>) => {
-  // If Supabase is not configured, use mock data
   if (!isSupabaseConfigured()) {
     const newLog: ContactLog = {
       id: uuidv4(),
@@ -138,7 +157,6 @@ export const createContactLog = async (log: Omit<ContactLog, 'id' | 'created_at'
 };
 
 export const updateContactLog = async (id: string, log: Partial<Omit<ContactLog, 'id' | 'created_at' | 'updated_at'>>) => {
-  // If Supabase is not configured, use mock data
   if (!isSupabaseConfigured()) {
     const index = mockContactLogs.findIndex(l => l.id === id);
     if (index === -1) {
@@ -173,7 +191,6 @@ export const updateContactLog = async (id: string, log: Partial<Omit<ContactLog,
 };
 
 export const deleteContactLog = async (id: string) => {
-  // If Supabase is not configured, use mock data
   if (!isSupabaseConfigured()) {
     const index = mockContactLogs.findIndex(l => l.id === id);
     if (index === -1) {
@@ -197,7 +214,6 @@ export const deleteContactLog = async (id: string) => {
 };
 
 export const getContactLogsByElderId = async (elderId: string) => {
-  // If Supabase is not configured, return mock data
   if (!isSupabaseConfigured()) {
     console.log('Using mock data for contact logs by elder ID');
     return Promise.resolve(mockContactLogs.filter(log => log.elder_id === elderId));
