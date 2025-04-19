@@ -2,6 +2,7 @@
 import React from 'react';
 import { Member } from '@/types/database.types';
 import { Card, CardContent } from '@/components/ui/card';
+import { UserCheck } from 'lucide-react';
 
 interface StatCardProps {
   label: string;
@@ -16,35 +17,67 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, color = 'bg-slate-100
   </div>
 );
 
+interface MemberTypeCount {
+  id: string;
+  name: string;
+  count: number;
+  color: string;
+}
+
 interface MemberStats {
   total: number;
-  members: number;
-  regulars: number;
-  visitors: number;
-  remote: number;
+  typeBreakdown: MemberTypeCount[];
 }
+
+// Map member types to colors
+const memberTypeColors: Record<string, string> = {
+  'member': 'bg-blue-50',
+  'regular': 'bg-green-50',
+  'visitor': 'bg-purple-50',
+  'remote': 'bg-orange-50',
+  // Default color for any other types
+  'default': 'bg-slate-100'
+};
 
 const MemberMetrics: React.FC<{ 
   members: Member[], 
   myMembers?: Member[] 
-}> = ({ members, myMembers }) => {
+}> = ({ members, myMembers = [] }) => {
+  // Group members by their member_type_id
+  const groupMembersByType = (membersList: Member[]): MemberTypeCount[] => {
+    const counts: Record<string, { count: number; name: string }> = {};
+    
+    // Count members by type
+    membersList.forEach(member => {
+      const typeId = member.member_type_id || 'unknown';
+      if (!counts[typeId]) {
+        // Get display name for the type - either from the member object or use ID as fallback
+        const typeName = member.member_type_name || typeId;
+        counts[typeId] = { count: 0, name: typeName };
+      }
+      counts[typeId].count += 1;
+    });
+    
+    // Convert to array format
+    return Object.entries(counts).map(([id, { count, name }]) => ({
+      id,
+      name: name.charAt(0).toUpperCase() + name.slice(1), // Capitalize first letter
+      count,
+      color: memberTypeColors[id.toLowerCase()] || memberTypeColors.default
+    }));
+  };
+
   // Calculate total stats
   const totalStats: MemberStats = {
     total: members.length,
-    members: members.filter(m => m.member_type_id === 'member').length,
-    regulars: members.filter(m => m.member_type_id === 'regular').length,
-    visitors: members.filter(m => m.member_type_id === 'visitor').length,
-    remote: members.filter(m => m.member_type_id === 'remote').length,
+    typeBreakdown: groupMembersByType(members)
   };
 
   // Calculate stats for members under my care
-  const myCareStats: MemberStats | null = myMembers ? {
+  const myCareStats: MemberStats = {
     total: myMembers.length,
-    members: myMembers.filter(m => m.member_type_id === 'member').length,
-    regulars: myMembers.filter(m => m.member_type_id === 'regular').length,
-    visitors: myMembers.filter(m => m.member_type_id === 'visitor').length,
-    remote: myMembers.filter(m => m.member_type_id === 'remote').length,
-  } : null;
+    typeBreakdown: groupMembersByType(myMembers)
+  };
 
   return (
     <div className="space-y-6">
@@ -56,32 +89,51 @@ const MemberMetrics: React.FC<{
             <div className="text-4xl font-bold mt-2">{totalStats.total}</div>
           </div>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <StatCard label="Members" value={totalStats.members} color="bg-blue-50" />
-              <StatCard label="Regulars" value={totalStats.regulars} color="bg-green-50" />
-              <StatCard label="Visitors" value={totalStats.visitors} color="bg-purple-50" />
-              <StatCard label="Remote" value={totalStats.remote} color="bg-orange-50" />
-            </div>
+            {totalStats.total > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {totalStats.typeBreakdown.map(type => (
+                  <StatCard 
+                    key={type.id} 
+                    label={type.name} 
+                    value={type.count} 
+                    color={type.color} 
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-500">
+                No members in the database.
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* UNDER MY CARE */}
-        {myCareStats && (
-          <Card className="overflow-hidden">
-            <div className="bg-green-600 p-4 text-white text-center">
-              <h3 className="text-xl font-semibold">UNDER MY CARE</h3>
-              <div className="text-4xl font-bold mt-2">{myCareStats.total}</div>
-            </div>
-            <CardContent className="pt-6">
+        {/* UNDER MY CARE - Always show this section */}
+        <Card className="overflow-hidden">
+          <div className="bg-green-600 p-4 text-white text-center">
+            <h3 className="text-xl font-semibold">UNDER MY CARE</h3>
+            <div className="text-4xl font-bold mt-2">{myCareStats.total}</div>
+          </div>
+          <CardContent className="pt-6">
+            {myCareStats.total > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <StatCard label="Members" value={myCareStats.members} color="bg-blue-50" />
-                <StatCard label="Regulars" value={myCareStats.regulars} color="bg-green-50" />
-                <StatCard label="Visitors" value={myCareStats.visitors} color="bg-purple-50" />
-                <StatCard label="Remote" value={myCareStats.remote} color="bg-orange-50" />
+                {myCareStats.typeBreakdown.map(type => (
+                  <StatCard 
+                    key={type.id} 
+                    label={type.name} 
+                    value={type.count} 
+                    color={type.color} 
+                  />
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            ) : (
+              <div className="text-center py-6 text-gray-500">
+                <UserCheck className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                <p>No members under your care.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
