@@ -35,7 +35,7 @@ const MinistryStats: React.FC<{
     return {
       name: ministry.name,
       members: count,
-      fill: '#3b82f6'
+      fill: '#8B5CF6' // Using Vivid Purple from the theme
     };
   });
   
@@ -46,7 +46,7 @@ const MinistryStats: React.FC<{
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-around bg-amber-50 text-amber-800 rounded-lg p-4">
+      <div className="flex items-center justify-around bg-purple-50 text-purple-900 rounded-lg p-4">
         <div className="text-center">
           <div className="text-3xl font-bold">
             {!countLoading && ministryCount?.count !== undefined ? ministryCount.count : '-'}
@@ -66,7 +66,7 @@ const MinistryStats: React.FC<{
       </div>
       
       <div>
-        <h3 className="text-center font-medium mb-2">Members by Ministry</h3>
+        <h3 className="text-center font-medium mb-2 text-purple-900">Members by Ministry</h3>
         <div className="h-[300px]">
           <ChartContainer config={{}}>
             <ResponsiveContainer width="100%" height="100%">
@@ -84,7 +84,7 @@ const MinistryStats: React.FC<{
                 />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="members" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="members" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
