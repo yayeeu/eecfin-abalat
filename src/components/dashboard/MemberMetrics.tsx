@@ -5,7 +5,6 @@ import { UserCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getMemberTypes } from '@/lib/services/memberTypeService';
 
-// Enhanced StatCard component with more dynamic styling
 const StatCard: React.FC<{ 
   label: string; 
   value: number; 
@@ -32,7 +31,6 @@ const StatCard: React.FC<{
   </div>
 );
 
-// Predefined color palette for member types
 const memberTypeColors: Record<string, string> = {
   'member': 'bg-blue-50 hover:bg-blue-100 border border-blue-200',
   'regular': 'bg-green-50 hover:bg-green-100 border border-green-200',
@@ -53,20 +51,15 @@ interface MemberStats {
   typeBreakdown: MemberTypeCount[];
 }
 
-// Map member types to colors
 const memberTypeColorsOld: Record<string, string> = {
   'member': 'bg-blue-50',
   'regular': 'bg-green-50',
   'visitor': 'bg-purple-50',
   'remote': 'bg-orange-50',
-  // Default color for any other types
   'default': 'bg-slate-100'
 };
 
-// Map of member type IDs to readable names
 const memberTypeNames: Record<string, string> = {
-  // These would typically come from the database, but we'll use some defaults
-  // as fallbacks for common member types
   'regular': 'Regular',
   'visitor': 'Visitor',
   'member': 'Member',
@@ -77,22 +70,18 @@ const MemberMetrics: React.FC<{
   members: Member[], 
   myMembers?: Member[] 
 }> = ({ members, myMembers = [] }) => {
-  // Fetch member types from the database
   const { data: memberTypes } = useQuery({
     queryKey: ['memberTypes'],
     queryFn: getMemberTypes,
-    staleTime: 30 * 60 * 1000, // 30 minutes cache
+    staleTime: 30 * 60 * 1000,
   });
 
-  // Group members by their member_type_id
   const groupMembersByType = (membersList: Member[]) => {
     const counts: Record<string, { count: number; name: string }> = {};
     
-    // Count members by type
     membersList.forEach(member => {
       const typeId = member.member_type_id || 'unknown';
       if (!counts[typeId]) {
-        // Find the name of the member type from the fetched types
         const memberType = memberTypes?.find(type => type.id === typeId);
         const typeName = memberType?.name || 
                           (typeId === 'unknown' ? 'Unknown' : 
@@ -102,7 +91,6 @@ const MemberMetrics: React.FC<{
       counts[typeId].count += 1;
     });
     
-    // Convert to array format
     return Object.entries(counts).map(([id, { count, name }]) => ({
       id,
       name,
@@ -111,13 +99,11 @@ const MemberMetrics: React.FC<{
     }));
   };
 
-  // Calculate total stats
   const totalStats: MemberStats = {
     total: members.length,
     typeBreakdown: groupMembersByType(members)
   };
 
-  // Calculate stats for members under my care
   const myCareStats: MemberStats = {
     total: myMembers.length,
     typeBreakdown: groupMembersByType(myMembers)
@@ -126,7 +112,6 @@ const MemberMetrics: React.FC<{
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* TOTAL in EECFIN */}
         <Card className="overflow-hidden animate-fade-in">
           <div className="bg-blue-600 p-4 text-white text-center">
             <h3 className="text-xl font-semibold">TOTAL in EECFIN</h3>
@@ -152,7 +137,6 @@ const MemberMetrics: React.FC<{
           </CardContent>
         </Card>
 
-        {/* UNDER MY CARE */}
         <Card className="overflow-hidden animate-fade-in">
           <div className="bg-green-600 p-4 text-white text-center">
             <h3 className="text-xl font-semibold">UNDER MY CARE</h3>
