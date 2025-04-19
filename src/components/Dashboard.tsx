@@ -103,31 +103,17 @@ const Dashboard: React.FC = () => {
             <h3 className="text-xl font-semibold">Recent Activities</h3>
           </AccordionTrigger>
           <AccordionContent>
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <h4 className="text-lg font-semibold mb-4">Under My Care</h4>
-                  <ElderCareMetrics 
-                    members={myMembers || []} 
-                    contactLogs={contactLogs || []} 
-                    elderId={currentUser?.id} 
-                    displayAllActivities={false}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <h4 className="text-lg font-semibold mb-4">All Activities</h4>
-                  <ElderCareMetrics 
-                    members={members || []} 
-                    contactLogs={contactLogs || []} 
-                    elderId={currentUser?.id}
-                    displayAllActivities={true}
-                  />
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <h4 className="text-lg font-semibold mb-4">All Activities</h4>
+                <ElderCareMetrics 
+                  members={members || []} 
+                  contactLogs={contactLogs || []} 
+                  elderId={currentUser?.id}
+                  displayAllActivities={true}
+                />
+              </CardContent>
+            </Card>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
