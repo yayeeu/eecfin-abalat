@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Member, ContactLog } from '@/types/database.types';
 import { Phone, MessageSquare } from 'lucide-react';
@@ -5,16 +6,16 @@ import {
   startOfWeek, endOfWeek, subWeeks, isWithinInterval,
   startOfToday 
 } from 'date-fns';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 interface ActivityStats {
   totalContacted: number;
   contacts: {
-    'Phone calls': number;
-    'Text messages': number;
-    'Face to face': number;
+    'Phone Call': number;
+    'Text Message': number;
+    'In Person': number;
+    'Email': number;
+    'Other': number;
   };
-  memberTypes: Record<string, number>;
 }
 
 const ElderCareMetrics: React.FC<{ 
@@ -39,18 +40,13 @@ const ElderCareMetrics: React.FC<{
     const stats: ActivityStats = {
       totalContacted: new Set(periodLogs.map(log => log.member_id)).size,
       contacts: {
-        'Phone calls': periodLogs.filter(log => log.contact_type === 'Phone Call').length,
-        'Text messages': periodLogs.filter(log => log.contact_type === 'Text Message').length,
-        'Face to face': periodLogs.filter(log => log.contact_type === 'In Person').length,
-      },
-      memberTypes: {}
+        'Phone Call': periodLogs.filter(log => log.contact_type === 'Phone Call').length,
+        'Text Message': periodLogs.filter(log => log.contact_type === 'Text Message').length,
+        'In Person': periodLogs.filter(log => log.contact_type === 'In Person').length,
+        'Email': periodLogs.filter(log => log.contact_type === 'Email').length,
+        'Other': periodLogs.filter(log => log.contact_type === 'Other').length,
+      }
     };
-
-    periodLogs.forEach(log => {
-      const member = members.find(m => m.id === log.member_id);
-      const memberType = member?.member_type_id || 'unknown';
-      stats.memberTypes[memberType] = (stats.memberTypes[memberType] || 0) + 1;
-    });
 
     return stats;
   };
@@ -61,8 +57,13 @@ const ElderCareMetrics: React.FC<{
   const lastWeekStart = startOfWeek(subWeeks(now, 1));
   const lastWeekEnd = endOfWeek(subWeeks(now, 1));
 
-  const thisWeekStats = getStatsForPeriod(thisWeekStart, thisWeekEnd, contactLogs);
-  const lastWeekStats = getStatsForPeriod(lastWeekStart, lastWeekEnd, contactLogs);
+  // Filter logs by elderId if provided
+  const filteredLogs = elderId 
+    ? contactLogs.filter(log => log.elder_id === elderId)
+    : contactLogs;
+
+  const thisWeekStats = getStatsForPeriod(thisWeekStart, thisWeekEnd, filteredLogs);
+  const lastWeekStats = getStatsForPeriod(lastWeekStart, lastWeekEnd, filteredLogs);
 
   const renderStatsSection = (title: string, stats: ActivityStats) => (
     <div className="rounded-lg border bg-card p-4">
@@ -70,33 +71,35 @@ const ElderCareMetrics: React.FC<{
       <div className="grid gap-4">
         <div className="text-center">
           <div className="text-3xl font-bold">{stats.totalContacted}</div>
-          <div className="text-sm text-muted-foreground">Total contacted</div>
+          <div className="text-sm text-muted-foreground">Members Contacted</div>
         </div>
         
         <div className="grid grid-cols-3 gap-2">
           <div className="text-center p-2 bg-blue-50 rounded-lg">
             <Phone className="h-4 w-4 mx-auto mb-1 text-blue-600" />
-            <div className="text-xl font-semibold">{stats.contacts['Phone calls']}</div>
+            <div className="text-xl font-semibold">{stats.contacts['Phone Call']}</div>
             <div className="text-xs">Phone calls</div>
           </div>
           <div className="text-center p-2 bg-green-50 rounded-lg">
             <MessageSquare className="h-4 w-4 mx-auto mb-1 text-green-600" />
-            <div className="text-xl font-semibold">{stats.contacts['Text messages']}</div>
+            <div className="text-xl font-semibold">{stats.contacts['Text Message']}</div>
             <div className="text-xs">Text messages</div>
           </div>
           <div className="text-center p-2 bg-purple-50 rounded-lg">
-            <div className="text-xl font-semibold">{stats.contacts['Face to face']}</div>
+            <div className="text-xl font-semibold">{stats.contacts['In Person']}</div>
             <div className="text-xs">Face to face</div>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
-          {Object.entries(stats.memberTypes).map(([type, count], index) => (
-            <div key={type} className="text-center p-2 bg-gray-50 rounded-lg">
-              <div className="text-lg font-semibold">{count}</div>
-              <div className="text-xs">{type === 'unknown' ? 'Other' : type}</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="text-center p-2 bg-amber-50 rounded-lg">
+            <div className="text-xl font-semibold">{stats.contacts['Email']}</div>
+            <div className="text-xs">Emails</div>
+          </div>
+          <div className="text-center p-2 bg-gray-50 rounded-lg">
+            <div className="text-xl font-semibold">{stats.contacts['Other']}</div>
+            <div className="text-xs">Other contacts</div>
+          </div>
         </div>
       </div>
     </div>
