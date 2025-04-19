@@ -1,4 +1,3 @@
-
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import { Ministry as DBMinistry } from '@/types/database.types';
 import { v4 as uuidv4 } from 'uuid';
@@ -57,8 +56,7 @@ export const getMinistries = async (activeOnly = false) => {
     .from('ministries')
     .select(`
       *,
-      contact_elder:members!ministries_contact_person_id_fkey(id, name, email, phone),
-      members:members(*)
+      contact_elder:members!ministries_contact_person_id_fkey(id, name, email, phone)
     `);
   
   if (activeOnly) {

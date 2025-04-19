@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { getMinistries } from '@/lib/ministryService';
 import { ChartBar } from 'lucide-react';
+import { getAllMemberMinistries } from '@/lib/services/memberMinistryService';
 
 const StatCard: React.FC<{ 
   label: string; 
@@ -23,9 +24,17 @@ const MinistryMetrics: React.FC<{ totalMembers: number }> = ({ totalMembers }) =
     staleTime: 30 * 60 * 1000,
   });
 
-  const membersInMinistries = ministries.reduce((acc, ministry) => {
-    return acc + (ministry.members?.length || 0);
-  }, 0);
+  const { data: memberMinistries = [], isLoading: memberMinistryLoading } = useQuery({
+    queryKey: ['allMemberMinistries'],
+    queryFn: getAllMemberMinistries,
+    staleTime: 30 * 60 * 1000,
+  });
+
+  const isLoading = ministriesLoading || memberMinistryLoading;
+  
+  // Count unique members involved in ministries
+  const uniqueMemberIds = new Set(memberMinistries.map(mm => mm.member_id));
+  const membersInMinistries = uniqueMemberIds.size;
 
   const participationRate = totalMembers > 0 
     ? Math.round((membersInMinistries / totalMembers) * 100)
@@ -41,7 +50,7 @@ const MinistryMetrics: React.FC<{ totalMembers: number }> = ({ totalMembers }) =
         <div className="grid grid-cols-2 gap-2">
           <StatCard 
             label="Members" 
-            value={ministriesLoading ? "..." : membersInMinistries}
+            value={isLoading ? "..." : membersInMinistries}
             color="bg-blue-50 hover:bg-blue-100 border border-blue-200"
           />
           <StatCard 
