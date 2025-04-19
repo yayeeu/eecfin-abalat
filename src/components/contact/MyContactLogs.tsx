@@ -16,6 +16,7 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from '@/components/ui/pagination';
+import { Button } from '@/components/ui/button';
 
 interface MyContactLogsProps {
   onMemberClick: (memberId: string) => void;
@@ -122,6 +123,14 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
   const endIndex = startIndex + LOGS_PER_PAGE;
   const currentLogs = sortedLogs.slice(startIndex, endIndex);
 
+  const goToPreviousPage = () => {
+    setCurrentPage(p => Math.max(1, p - 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage(p => Math.min(totalPages, p + 1));
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -139,11 +148,23 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              />
+              {currentPage === 1 ? (
+                <Button 
+                  variant="outline" 
+                  size="default"
+                  className="gap-1 pl-2.5"
+                  disabled={true}
+                >
+                  <span className="flex items-center gap-1">
+                    <Loader2 className="h-4 w-4" />
+                    Previous
+                  </span>
+                </Button>
+              ) : (
+                <PaginationPrevious onClick={goToPreviousPage} />
+              )}
             </PaginationItem>
+            
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <PaginationItem key={page}>
                 <PaginationLink
@@ -154,11 +175,23 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
                 </PaginationLink>
               </PaginationItem>
             ))}
+            
             <PaginationItem>
-              <PaginationNext
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-              />
+              {currentPage === totalPages ? (
+                <Button 
+                  variant="outline" 
+                  size="default"
+                  className="gap-1 pr-2.5"
+                  disabled={true}
+                >
+                  <span className="flex items-center gap-1">
+                    Next
+                    <Loader2 className="h-4 w-4" />
+                  </span>
+                </Button>
+              ) : (
+                <PaginationNext onClick={goToNextPage} />
+              )}
             </PaginationItem>
           </PaginationContent>
         </Pagination>
