@@ -13,8 +13,6 @@ import {
   Users,
   CalendarDays,
   Clock,
-  AlertCircle,
-  Flag,
   Info
 } from 'lucide-react';
 
@@ -83,7 +81,7 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
         </div>
       </div>
 
-      <Accordion type="multiple" className="space-y-4">
+      <Accordion type="multiple" defaultValue={["this-week"]} className="space-y-4">
         {sortedElders.map((elder) => {
           const groupedMembers: Record<string, Array<{ id: string; name: string; role?: string; logDate?: Date | null }>> = {
             'This week': [],
@@ -157,38 +155,48 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
 
               <AccordionContent>
                 <ScrollArea className="h-[400px] px-4 py-2">
-                  <div className="space-y-4">
+                  <Accordion type="multiple" className="space-y-2">
                     {Object.entries(groupedMembers).map(([period, members]) => (
-                      <Card key={`${elder.id}-${period}`}>
-                        <CardContent className="pt-6">
-                          <div className="flex items-center gap-2 mb-3">
+                      <AccordionItem 
+                        key={`${elder.id}-${period}`}
+                        value={`${elder.id}-${period}`}
+                        className="border rounded-lg overflow-hidden"
+                      >
+                        <AccordionTrigger className="px-4 py-2 hover:no-underline">
+                          <div className="flex items-center gap-2">
                             {period === 'More than 4 weeks' ? (
                               <Clock className="h-4 w-4 text-muted-foreground" />
                             ) : (
                               <CalendarDays className="h-4 w-4 text-muted-foreground" />
                             )}
-                            <h4 className="font-medium text-sm">
+                            <span className="font-medium text-sm">
                               {period}
-                              {members.length === 0 && " - No members contacted"}
-                            </h4>
+                              {members.length > 0 && ` (${members.length})`}
+                            </span>
                           </div>
-                          {members.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {members.map(member => (
-                                <button
-                                  key={member.id}
-                                  onClick={() => onMemberClick?.(member.id)}
-                                  className={`inline-flex items-center px-2 py-1 rounded text-sm transition-colors ${getMemberTypeColor(member.role)}`}
-                                >
-                                  {member.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="p-4">
+                            {members.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">No members contacted during this period</p>
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                {members.map(member => (
+                                  <button
+                                    key={member.id}
+                                    onClick={() => onMemberClick?.(member.id)}
+                                    className={`inline-flex items-center px-2 py-1 rounded text-sm transition-colors ${getMemberTypeColor(member.role)}`}
+                                  >
+                                    {member.name}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
                     ))}
-                  </div>
+                  </Accordion>
                 </ScrollArea>
               </AccordionContent>
             </AccordionItem>
