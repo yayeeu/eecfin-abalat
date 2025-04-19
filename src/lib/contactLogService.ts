@@ -56,7 +56,7 @@ export const getContactLogs = async (filters?: {
     .select(`
       id,
       name,
-      role,
+      role_id,
       member_assignments:member_under_elder!elder_id(
         member:members!member_under_elder_member_id_fkey(
           id,
@@ -77,7 +77,7 @@ export const getContactLogs = async (filters?: {
         )
       )
     `)
-    .eq('role', 'elder')
+    .eq('role_id', (await getRoleIdByName('elder'))) // Using a function to get the elder role ID
     .order('name');
   
   const { data: elders, error: eldersError } = await query;
@@ -102,6 +102,27 @@ export const getContactLogs = async (filters?: {
   
   return formattedData;
 };
+
+// Helper function to get role ID by name
+async function getRoleIdByName(roleName: string) {
+  if (!isSupabaseConfigured()) {
+    // For mock data, return a string ID
+    return 'elder-role-id';
+  }
+  
+  const { data, error } = await supabase!
+    .from('roles')
+    .select('id')
+    .eq('name', roleName)
+    .single();
+  
+  if (error) {
+    console.error('Error fetching role ID:', error);
+    throw error;
+  }
+  
+  return data?.id;
+}
 
 export const getContactLog = async (id: string) => {
   if (!isSupabaseConfigured()) {
