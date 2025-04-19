@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -50,7 +50,12 @@ const CustomHeader = () => {
               >
                 Profile
               </Link>
-              <Button variant="outline" onClick={signOut}>
+              <Button 
+                variant="outline" 
+                onClick={signOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut size={16} />
                 Logout
               </Button>
             </div>
@@ -76,7 +81,12 @@ const CustomHeader = () => {
             >
               Profile
             </Link>
-            <Button className="w-full mt-3" variant="outline" onClick={signOut}>
+            <Button 
+              className="w-full mt-3 flex items-center gap-2" 
+              variant="outline" 
+              onClick={signOut}
+            >
+              <LogOut size={16} />
               Logout
             </Button>
           </div>
