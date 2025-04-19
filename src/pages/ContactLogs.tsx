@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +8,6 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ContactLog } from '@/types/database.types';
 import FilterTabs from '@/components/members/FilterTabs';
 import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import GroupedContactLogs from '@/components/contact/GroupedContactLogs';
 import ContactLogsHeader from '@/components/contact/ContactLogsHeader';
 import ContactLogsControls from '@/components/contact/ContactLogsControls';
@@ -103,42 +101,40 @@ const ContactLogs: React.FC = () => {
     <div className="container mx-auto py-6 px-4">
       <ContactLogsHeader onAddNew={handleAddNew} />
       
-      <div className="space-y-4">
-        <ContactLogsControls
-          searchTerm={searchTerm}
-          onSearchChange={handleSearchChange}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
+      <ContactLogsControls
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <FilterTabs 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          customTabs={[
+            { value: 'all', label: 'All Logs' },
+            { value: 'my-logs', label: 'My Contact Logs' }
+          ]}
         />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <FilterTabs 
-            activeTab={activeTab} 
-            onTabChange={setActiveTab} 
-            customTabs={[
-              { value: 'all', label: 'All Logs' },
-              { value: 'my-logs', label: 'My Contact Logs' }
-            ]}
-          />
-
-          <TabsContent value={activeTab} className="mt-0">
-            {activeTab === 'all' ? (
-              <GroupedContactLogs 
-                elders={elderData}
-                onMemberClick={handleMemberClick}
-              />
-            ) : (
-              <MyContactLogs onMemberClick={handleMemberClick} />
-            )}
+        <TabsContent value={activeTab} className="mt-0">
+          {activeTab === 'all' ? (
+            <GroupedContactLogs 
+              elders={elderData}
+              onMemberClick={handleMemberClick}
+            />
+          ) : (
+            <MyContactLogs onMemberClick={handleMemberClick} />
+          )}
             
-            <div className="mt-4 flex justify-between items-center">
-              <p className="text-sm text-muted-foreground">
-                Showing {activeTab === 'all' ? elderData.length : 0} {getActiveTabLabel()} contact logs
-              </p>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+          <div className="mt-4 flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              Showing {activeTab === 'all' ? elderData.length : 0} {getActiveTabLabel()} contact logs
+            </p>
+          </div>
+        </TabsContent>
+      </Tabs>
       
       <ContactLogDialog
         isOpen={isFormOpen}

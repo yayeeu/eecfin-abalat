@@ -2,7 +2,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getContactLogs } from '@/lib/contactLogService';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Accordion,
@@ -13,6 +13,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface MyContactLogsProps {
   onMemberClick: (memberId: string) => void;
@@ -29,7 +30,7 @@ const memberTypeColors = {
 const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
   const { toast } = useToast();
   
-  const { data: logs, isLoading, isError } = useQuery({
+  const { data: logs = [], isLoading, isError } = useQuery({
     queryKey: ['my-contact-logs'],
     queryFn: () => getContactLogs({ myLogs: true }),
     meta: {
@@ -54,14 +55,30 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
 
   if (isError) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-500">Error loading contact logs</p>
-      </div>
+      <Alert variant="destructive" className="my-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          There was a problem loading your contact logs. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (logs.length === 0) {
+    return (
+      <Alert className="my-4 bg-blue-50 border-blue-200">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No contact logs</AlertTitle>
+        <AlertDescription>
+          You don't have any contact logs yet. Contact logs will appear here when you record interactions with members.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   // Group logs by member type
-  const groupedLogs = logs?.reduce((acc: Record<string, any[]>, log) => {
+  const groupedLogs = logs.reduce((acc: Record<string, any[]>, log) => {
     const memberType = log.member?.role || 'regular';
     if (!acc[memberType]) {
       acc[memberType] = [];
