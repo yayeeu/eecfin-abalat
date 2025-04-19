@@ -1,63 +1,21 @@
+
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { getContactLogs } from '@/lib/contactLogService';
-import { getAllMembers } from '@/lib/memberService';
-import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ContactLog } from '@/types/database.types';
-import FilterTabs from '@/components/members/FilterTabs';
-import { Loader2 } from 'lucide-react';
 import GroupedContactLogs from '@/components/contact/GroupedContactLogs';
-import ContactLogsHeader from '@/components/contact/ContactLogsHeader';
 import MyContactLogs from '@/components/contact/MyContactLogs';
 import ContactLogDialog from '@/components/contact/ContactLogDialog';
+import FilterTabs from '@/components/members/FilterTabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { UserPlus } from 'lucide-react';
 
 const ContactLogs: React.FC = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<ContactLog | null>(null);
   const [selectedElder, setSelectedElder] = useState<string | null>(null);
-
-  const { 
-    data: elderData = [], 
-    isLoading: logsLoading, 
-    isError: logsError,
-    refetch 
-  } = useQuery({
-    queryKey: ['contact-logs'],
-    queryFn: () => getContactLogs(),
-    meta: {
-      onError: (error: any) => {
-        console.error('Error fetching contact logs:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load contact logs data. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    }
-  });
-
-  const {
-    data: members = [],
-    isLoading: membersLoading,
-  } = useQuery({
-    queryKey: ['all-members'],
-    queryFn: getAllMembers,
-    meta: {
-      onError: (error: any) => {
-        console.error('Error fetching members:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load members data. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    }
-  });
 
   const handleAddNew = () => {
     setSelectedLog(null);
@@ -71,30 +29,19 @@ const ContactLogs: React.FC = () => {
   const closeForm = () => {
     setIsFormOpen(false);
     setSelectedLog(null);
-    refetch();
   };
-
-  const getActiveTabLabel = () => {
-    switch (activeTab) {
-      case 'my-logs': return 'of your contact logs';
-      default: return 'all';
-    }
-  };
-
-  if (logsLoading) {
-    return (
-      <div className="flex justify-center items-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-eecfin-navy" />
-        <span className="ml-2">Loading contact logs...</span>
-      </div>
-    );
-  }
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      <ContactLogsHeader onAddNew={handleAddNew} />
-      
-      <div className="space-y-4">
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Contact Logs</h1>
+        <Button onClick={handleAddNew} className="flex items-center gap-2">
+          <UserPlus className="h-4 w-4" />
+          Add New Contact Log
+        </Button>
+      </div>
+
+      <div>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <FilterTabs 
             activeTab={activeTab} 
@@ -105,25 +52,19 @@ const ContactLogs: React.FC = () => {
             ]}
           />
 
-          <TabsContent value={activeTab} className="mt-0">
+          <TabsContent value={activeTab}>
             {activeTab === 'all' ? (
               <GroupedContactLogs 
-                elders={elderData}
+                elders={[]}
                 onMemberClick={handleMemberClick}
               />
             ) : (
               <MyContactLogs onMemberClick={handleMemberClick} />
             )}
-            
-            <div className="mt-4 flex justify-between items-center">
-              <p className="text-sm text-muted-foreground">
-                Showing {elderData.length} {getActiveTabLabel()} contact logs
-              </p>
-            </div>
           </TabsContent>
         </Tabs>
       </div>
-      
+
       <ContactLogDialog
         isOpen={isFormOpen}
         onOpenChange={setIsFormOpen}

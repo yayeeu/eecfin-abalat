@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getContactLogs } from '@/lib/contactLogService';
@@ -14,6 +13,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { ContactLog } from '@/types/database.types';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface MyContactLogsProps {
   onMemberClick: (memberId: string) => void;
@@ -63,14 +64,26 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
 
   if (isError) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-500">Error loading contact logs</p>
-      </div>
+      <Alert variant="destructive" className="my-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Error loading contact logs. Please try again later.
+        </AlertDescription>
+      </Alert>
     );
   }
 
-  // Group logs by member type - ensure we have properly typed logs
   const typedLogs = logs as LogWithMember[];
+  if (!typedLogs.length) {
+    return (
+      <Alert className="my-4">
+        <AlertDescription>
+          You have no contact logs yet.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   const groupedLogs = typedLogs.reduce((acc: Record<string, LogWithMember[]>, log: LogWithMember) => {
     const memberType = log.member?.role || 'regular';
     if (!acc[memberType]) {
