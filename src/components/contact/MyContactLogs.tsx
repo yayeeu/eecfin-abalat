@@ -13,6 +13,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { ContactLog } from '@/types/database.types';
 
 interface MyContactLogsProps {
   onMemberClick: (memberId: string) => void;
@@ -25,6 +26,14 @@ const memberTypeColors = {
   'inactive': 'bg-gray-100 text-gray-800',
   'elder': 'bg-yellow-100 text-yellow-800'
 } as const;
+
+interface LogWithMember extends ContactLog {
+  member?: {
+    id: string;
+    name: string;
+    role?: string;
+  };
+}
 
 const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
   const { toast } = useToast();
@@ -60,8 +69,9 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
     );
   }
 
-  // Group logs by member type - fixed TypeScript error by explicitly typing logs as any[] and adding type assertions
-  const groupedLogs = logs.reduce((acc: Record<string, any[]>, log: any) => {
+  // Group logs by member type - ensure we have properly typed logs
+  const typedLogs = logs as LogWithMember[];
+  const groupedLogs = typedLogs.reduce((acc: Record<string, LogWithMember[]>, log: LogWithMember) => {
     const memberType = log.member?.role || 'regular';
     if (!acc[memberType]) {
       acc[memberType] = [];
@@ -105,7 +115,7 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
               <div className="space-y-4">
-                {logs.map((log: any) => (
+                {logs.map((log: LogWithMember) => (
                   <Card key={log.id} className="cursor-pointer hover:shadow-md transition-shadow">
                     <CardContent 
                       className="p-4"
