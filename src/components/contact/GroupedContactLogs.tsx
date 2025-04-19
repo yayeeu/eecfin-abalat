@@ -18,9 +18,13 @@ import {
 
 interface GroupedContactLogsProps {
   groupedData: Record<string, Record<string, ContactLog[]>>;
+  onMemberClick?: (memberId: string) => void;
 }
 
-const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({ groupedData }) => {
+const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({ 
+  groupedData,
+  onMemberClick 
+}) => {
   return (
     <Accordion type="multiple" className="space-y-4">
       {Object.entries(groupedData).map(([elderId, elderLogs]) => {
@@ -66,9 +70,18 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({ groupedData }) 
                                 className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
                               >
                                 <UserCheck className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">
-                                  {log.member?.name || 'Unknown Member'}
-                                </span>
+                                {log.member_id && onMemberClick ? (
+                                  <button 
+                                    className="text-sm text-blue-600 hover:underline"
+                                    onClick={() => onMemberClick(log.member_id)}
+                                  >
+                                    {log.member?.name || 'Unknown Member'}
+                                  </button>
+                                ) : (
+                                  <span className="text-sm">
+                                    {log.member?.name || 'Unknown Member'}
+                                  </span>
+                                )}
                                 {log.flagged && (
                                   <Badge variant="secondary" className="ml-auto">
                                     Flagged
