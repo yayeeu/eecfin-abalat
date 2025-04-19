@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { Member } from '@/types/database.types';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface StatCardProps {
   label: string;
   value: number;
+  color?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ label, value }) => (
-  <div className="bg-white rounded-lg shadow p-4 text-center">
+const StatCard: React.FC<StatCardProps> = ({ label, value, color = 'bg-slate-100' }) => (
+  <div className={`${color} rounded-lg shadow p-4 text-center`}>
     <div className="text-lg font-semibold text-gray-700">{label}</div>
     <div className="text-3xl font-bold text-gray-900">{value}</div>
   </div>
@@ -48,33 +50,37 @@ const MemberMetrics: React.FC<{
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* TOTAL in EECFIN */}
-        <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <div className="text-xl font-semibold text-gray-700">TOTAL in EECFIN</div>
-            <div className="text-4xl font-bold text-gray-900 mt-2">{totalStats.total}</div>
+        <Card className="overflow-hidden">
+          <div className="bg-blue-600 p-4 text-white text-center">
+            <h3 className="text-xl font-semibold">TOTAL in EECFIN</h3>
+            <div className="text-4xl font-bold mt-2">{totalStats.total}</div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard label="Members" value={totalStats.members} />
-            <StatCard label="Regulars" value={totalStats.regulars} />
-            <StatCard label="Visitors" value={totalStats.visitors} />
-            <StatCard label="Remote" value={totalStats.remote} />
-          </div>
-        </div>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <StatCard label="Members" value={totalStats.members} color="bg-blue-50" />
+              <StatCard label="Regulars" value={totalStats.regulars} color="bg-green-50" />
+              <StatCard label="Visitors" value={totalStats.visitors} color="bg-purple-50" />
+              <StatCard label="Remote" value={totalStats.remote} color="bg-orange-50" />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* UNDER MY CARE */}
         {myCareStats && (
-          <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-xl font-semibold text-gray-700">UNDER MY CARE</div>
-              <div className="text-4xl font-bold text-gray-900 mt-2">{myCareStats.total}</div>
+          <Card className="overflow-hidden">
+            <div className="bg-green-600 p-4 text-white text-center">
+              <h3 className="text-xl font-semibold">UNDER MY CARE</h3>
+              <div className="text-4xl font-bold mt-2">{myCareStats.total}</div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <StatCard label="Members" value={myCareStats.members} />
-              <StatCard label="Regulars" value={myCareStats.regulars} />
-              <StatCard label="Visitors" value={myCareStats.visitors} />
-              <StatCard label="Remote" value={myCareStats.remote} />
-            </div>
-          </div>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <StatCard label="Members" value={myCareStats.members} color="bg-blue-50" />
+                <StatCard label="Regulars" value={myCareStats.regulars} color="bg-green-50" />
+                <StatCard label="Visitors" value={myCareStats.visitors} color="bg-purple-50" />
+                <StatCard label="Remote" value={myCareStats.remote} color="bg-orange-50" />
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

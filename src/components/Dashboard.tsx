@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllMembers, getElderMembers } from '@/lib/memberService';
@@ -81,7 +82,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Accordion type="multiple" className="space-y-4">
+      <Accordion type="single" collapsible className="space-y-4">
         <AccordionItem value="general-stats" className="border rounded-lg">
           <AccordionTrigger className="px-4">
             <h3 className="text-xl font-semibold">General Stats</h3>
