@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminContent from '@/components/admin/AdminContent';
 
@@ -27,24 +25,11 @@ const Admin: React.FC = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen w-full">
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          {/* Sidebar Component */}
-          <AdminSidebar />
-
-          {/* Main content area with header and content */}
-          <div className="flex flex-col flex-1">
-            {/* Header Component */}
-            <AdminHeader />
-
-            {/* Content Component */}
-            <AdminContent 
-              activeSection={activeSection}
-            />
-          </div>
-        </div>
-      </SidebarProvider>
+    <div className="min-h-screen w-full bg-gray-50">
+      <AdminHeader />
+      <div className="container mx-auto px-4 py-6">
+        <AdminContent activeSection={activeSection} />
+      </div>
     </div>
   );
 };
