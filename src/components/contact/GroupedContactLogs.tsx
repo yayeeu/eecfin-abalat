@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ContactLog } from '@/types/database.types';
 import { 
@@ -14,7 +15,8 @@ import {
   CalendarDays,
   UserCheck,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Flag
 } from 'lucide-react';
 
 interface Elder {
@@ -81,6 +83,7 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
         });
 
         const totalContacts = elder.logs.length;
+        const flaggedContacts = elder.logs.filter(log => log.flagged).length;
 
         return (
           <AccordionItem 
@@ -94,9 +97,15 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
                   <Users className="h-5 w-5 text-muted-foreground" />
                   <div className="text-left">
                     <p className="font-semibold">{elder.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {totalContacts} contact{totalContacts !== 1 ? 's' : ''} | {elder.assignedMembers.length} members
-                    </p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <p>{totalContacts} contact{totalContacts !== 1 ? 's' : ''} | {elder.assignedMembers.length} members</p>
+                      {flaggedContacts > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Flag className="h-3 w-3 text-yellow-500" />
+                          <span>{flaggedContacts} flagged</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
