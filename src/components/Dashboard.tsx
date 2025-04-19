@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllMembers, getElderMembers } from '@/lib/memberService';
@@ -6,9 +5,15 @@ import { getContactLogsByElderId } from '@/lib/contactLogService';
 import { getCurrentUser } from '@/services/authService';
 import MemberMetrics from './dashboard/MemberMetrics';
 import ElderCareMetrics from './dashboard/ElderCareMetrics';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { Member } from '@/types/database.types';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Dashboard: React.FC = () => {
   // Fetch current user data first with shorter staleTime
@@ -84,47 +89,54 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top section with two cards side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle>Membership Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MemberMetrics members={members || []} />
-          </CardContent>
-        </Card>
-        
-        <Card className="md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle>Under my Care</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ElderCareMetrics 
-              members={myMembers || []} 
-              contactLogs={contactLogs || []} 
-              elderId={currentUser?.id} 
-              displayAllActivities={false}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <Accordion type="multiple" defaultValue={["general-stats", "recent-activities"]} className="space-y-4">
+        <AccordionItem value="general-stats" className="border rounded-lg">
+          <AccordionTrigger className="px-4">
+            <h3 className="text-xl font-semibold">General Stats</h3>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Card>
+              <CardContent className="pt-6">
+                <MemberMetrics members={members || []} />
+              </CardContent>
+            </Card>
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Full width "All Activities" section */}
-      <Card className="w-full">
-        <CardHeader className="pb-2">
-          <CardTitle>All Activities</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ElderCareMetrics 
-            members={members || []} 
-            contactLogs={contactLogs || []} 
-            elderId={currentUser?.id}
-            displayAllActivities={true}
-            displaySummary={false}
-          />
-        </CardContent>
-      </Card>
+        <AccordionItem value="recent-activities" className="border rounded-lg">
+          <AccordionTrigger className="px-4">
+            <h3 className="text-xl font-semibold">Recent Activities</h3>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <h4 className="text-lg font-semibold mb-4">Under My Care</h4>
+                  <ElderCareMetrics 
+                    members={myMembers || []} 
+                    contactLogs={contactLogs || []} 
+                    elderId={currentUser?.id} 
+                    displayAllActivities={false}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <h4 className="text-lg font-semibold mb-4">All Activities</h4>
+                  <ElderCareMetrics 
+                    members={members || []} 
+                    contactLogs={contactLogs || []} 
+                    elderId={currentUser?.id}
+                    displayAllActivities={true}
+                    displaySummary={false}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };
