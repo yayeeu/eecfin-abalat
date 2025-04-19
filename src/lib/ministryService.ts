@@ -81,6 +81,8 @@ export const getActiveMinistryCount = async () => {
     return Promise.resolve({ count });
   }
 
+  console.log('Fetching active ministry count...');
+  
   const { count, error } = await supabase!
     .from('ministries')
     .select('*', { count: 'exact', head: true })
@@ -91,7 +93,9 @@ export const getActiveMinistryCount = async () => {
     throw error;
   }
 
-  return { count };
+  console.log('Active ministry count result:', count);
+  
+  return { count: count || 0 };
 };
 
 export const getMinistry = async (id: string) => {

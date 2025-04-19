@@ -23,7 +23,7 @@ const MinistryStats: React.FC<{
   members,
   elders 
 }) => {
-  const { data: ministryCount } = useQuery({
+  const { data: ministryCount, isLoading: countLoading } = useQuery({
     queryKey: ['activeMinistryCount'],
     queryFn: getActiveMinistryCount,
     staleTime: 30 * 60 * 1000, // 30 minutes
@@ -42,11 +42,15 @@ const MinistryStats: React.FC<{
   // Sort by number of members (descending)
   membersByMinistry.sort((a, b) => b.members - a.members);
   
+  console.log('Active ministry count:', ministryCount); // Debug log
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-around bg-amber-50 text-amber-800 rounded-lg p-4">
         <div className="text-center">
-          <div className="text-3xl font-bold">{ministryCount?.count || 0}</div>
+          <div className="text-3xl font-bold">
+            {!countLoading && ministryCount?.count !== undefined ? ministryCount.count : '-'}
+          </div>
           <div className="text-sm font-medium">Active Ministries</div>
         </div>
         <div className="text-center">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllMembers, getElderMembers } from '@/lib/memberService';
@@ -16,6 +15,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { getMembersByElderId } from '@/lib/memberService';
+import MinistryStats from './dashboard/MinistryStats';
+import { getMinistries } from '@/lib/ministryService';
 
 const Dashboard: React.FC = () => {
   const { data: currentUser, isLoading: userLoading } = useQuery<Member | null>({
@@ -36,6 +37,13 @@ const Dashboard: React.FC = () => {
     queryKey: ['elders'],
     queryFn: getElderMembers,
     staleTime: 30 * 60 * 1000, // 30 minutes - elders don't change often
+    enabled: !userLoading, // Only run when user is loaded
+  });
+
+  const { data: ministries, isLoading: ministriesLoading } = useQuery({
+    queryKey: ['ministries'],
+    queryFn: () => getMinistries(true), // Get only active ministries
+    staleTime: 10 * 60 * 1000, // 10 minutes
     enabled: !userLoading, // Only run when user is loaded
   });
 
@@ -70,6 +78,7 @@ const Dashboard: React.FC = () => {
   const isLoading = userLoading || 
     membersLoading || 
     eldersLoading || 
+    ministriesLoading ||
     (isElder && (myMembersLoading || contactLogsLoading));
 
   if (isLoading) {
@@ -95,6 +104,14 @@ const Dashboard: React.FC = () => {
                   members={members || []} 
                   myMembers={myMembers} 
                 />
+                
+                <div className="mt-6">
+                  <MinistryStats 
+                    ministries={ministries || []} 
+                    members={members || []} 
+                    elders={elders || []}
+                  />
+                </div>
               </CardContent>
             </Card>
           </AccordionContent>
@@ -124,4 +141,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
