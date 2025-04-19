@@ -228,7 +228,6 @@ const ContactLogs: React.FC = () => {
             searchTerm={searchTerm} 
             onSearchChange={handleSearchChange} 
           />
-
           <div className="flex gap-2">
             <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
           </div>
@@ -325,67 +324,7 @@ const ContactLogs: React.FC = () => {
                 </div>
               </div>
             ) : processedData.filteredLogs.length > 0 ? (
-              <div className="space-y-8">
-                {Object.entries(processedData.groupedData).map(([period, elderGroups]) => (
-                  Object.keys(elderGroups).length > 0 && (
-                    <div key={period} className="mb-8">
-                      <h2 className="text-xl font-semibold mb-4 flex items-center">
-                        <CalendarDays className="mr-2 h-5 w-5" />
-                        {period}
-                      </h2>
-                      
-                      {Object.entries(elderGroups).map(([elderId, elderLogs]) => {
-                        const elderName = elderLogs[0]?.elder?.name || 'Unknown Elder';
-                        return (
-                          <Card key={`${period}-${elderId}`} className="mb-4">
-                            <CardHeader>
-                              <CardTitle className="text-lg">{elderName}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead>Member</TableHead>
-                                    <TableHead>Contact Type</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Status</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {elderLogs.map(log => (
-                                    <TableRow key={log.id}>
-                                      <TableCell>
-                                        <button 
-                                          className="text-blue-600 hover:underline font-medium"
-                                          onClick={() => log.member_id && handleMemberClick(log.member_id)}
-                                        >
-                                          {log.member?.name || 'Unknown Member'}
-                                        </button>
-                                      </TableCell>
-                                      <TableCell>{log.contact_type}</TableCell>
-                                      <TableCell>
-                                        {log.created_at && format(new Date(log.created_at), 'MMM d, yyyy')}
-                                      </TableCell>
-                                      <TableCell>
-                                        {log.flagged && (
-                                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
-                                            <AlertTriangle className="h-3 w-3 mr-1" />
-                                            Flagged
-                                          </Badge>
-                                        )}
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  )
-                ))}
-              </div>
+              <GroupedContactLogs groupedData={processedData.groupedData} />
             ) : (
               <div className="text-center py-8 bg-gray-50 rounded">
                 <p className="text-gray-500">No contact logs found</p>
@@ -427,6 +366,72 @@ const ContactLogs: React.FC = () => {
           />
         </DialogContent>
       </Dialog>
+    </div>
+  );
+};
+
+const GroupedContactLogs: React.FC<{ groupedData: Record<string, Record<string, ContactLog[]>> }> = ({ groupedData }) => {
+  return (
+    <div className="space-y-8">
+      {Object.entries(groupedData).map(([period, elderGroups]) => (
+        Object.keys(elderGroups).length > 0 && (
+          <div key={period} className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <CalendarDays className="mr-2 h-5 w-5" />
+              {period}
+            </h2>
+            
+            {Object.entries(elderGroups).map(([elderId, elderLogs]) => {
+              const elderName = elderLogs[0]?.elder?.name || 'Unknown Elder';
+              return (
+                <Card key={`${period}-${elderId}`} className="mb-4">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{elderName}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Member</TableHead>
+                          <TableHead>Contact Type</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {elderLogs.map(log => (
+                          <TableRow key={log.id}>
+                            <TableCell>
+                              <button 
+                                className="text-blue-600 hover:underline font-medium"
+                                onClick={() => log.member_id && handleMemberClick(log.member_id)}
+                              >
+                                {log.member?.name || 'Unknown Member'}
+                              </button>
+                            </TableCell>
+                            <TableCell>{log.contact_type}</TableCell>
+                            <TableCell>
+                              {log.created_at && format(new Date(log.created_at), 'MMM d, yyyy')}
+                            </TableCell>
+                            <TableCell>
+                              {log.flagged && (
+                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                                  <AlertTriangle className="h-3 w-3 mr-1" />
+                                  Flagged
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )
+      ))}
     </div>
   );
 };
