@@ -51,8 +51,8 @@ const MemberMetrics: React.FC<{
     membersList.forEach(member => {
       const typeId = member.member_type_id || 'unknown';
       if (!counts[typeId]) {
-        // Get display name for the type - either from the member object or use ID as fallback
-        const typeName = member.member_type_name || typeId;
+        // Use the member_type_id as the name fallback since member_type_name doesn't exist
+        const typeName = typeId; // Using typeId as fallback
         counts[typeId] = { count: 0, name: typeName };
       }
       counts[typeId].count += 1;
