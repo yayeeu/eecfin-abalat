@@ -16,7 +16,7 @@ const StatCard: React.FC<{
     ${color} 
     rounded-xl 
     shadow-md 
-    p-3  // Reduced padding
+    p-2
     text-center 
     transition-all 
     duration-300 
@@ -26,8 +26,9 @@ const StatCard: React.FC<{
     flex
     flex-col
     justify-center
+    min-h-[80px]
   `}>
-    <div className="text-xs font-medium text-gray-600 mb-1 group-hover:text-gray-800 transition-colors truncate">
+    <div className="text-xs font-medium text-gray-600 mb-1 group-hover:text-gray-800 transition-colors px-1">
       {label}
     </div>
     <div className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
@@ -122,9 +123,9 @@ const MemberMetrics: React.FC<{
             <h3 className="text-xl font-semibold">TOTAL in EECFIN</h3>
             <div className="text-4xl font-bold mt-2">{totalStats.total}</div>
           </div>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4">
             {totalStats.total > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 {totalStats.typeBreakdown.map(type => (
                   <StatCard 
                     key={type.id} 
@@ -147,9 +148,9 @@ const MemberMetrics: React.FC<{
             <h3 className="text-xl font-semibold">UNDER MY CARE</h3>
             <div className="text-4xl font-bold mt-2">{myCareStats.total}</div>
           </div>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4">
             {myCareStats.total > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 {myCareStats.typeBreakdown.map(type => (
                   <StatCard 
                     key={type.id} 

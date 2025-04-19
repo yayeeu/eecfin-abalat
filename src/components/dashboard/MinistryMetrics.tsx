@@ -3,8 +3,8 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { getMinistries } from '@/lib/ministryService';
-import { getAllMemberMinistries } from '@/lib/services/memberMinistryService';
 import { ChartBar } from 'lucide-react';
+import { Member } from '@/types/database.types';
 
 const StatCard: React.FC<{ 
   label: string; 
@@ -20,19 +20,16 @@ const StatCard: React.FC<{
 const MinistryMetrics: React.FC<{ totalMembers: number }> = ({ totalMembers }) => {
   const { data: ministries = [] } = useQuery({
     queryKey: ['ministries'],
-    queryFn: () => getMinistries(true), // Only get active ministries
-    staleTime: 30 * 60 * 1000,
-  });
-
-  const { data: memberMinistries = [] } = useQuery({
-    queryKey: ['allMemberMinistries'],
-    queryFn: getAllMemberMinistries,
+    queryFn: () => getMinistries(true),
     staleTime: 30 * 60 * 1000,
   });
 
   // Calculate metrics
-  const activeMinistries = ministries.length;
-  const membersInMinistries = new Set(memberMinistries.map(mm => mm.member_id)).size;
+  const membersInMinistries = ministries.reduce((acc, ministry) => {
+    const membersCount = ministry.members?.length || 0;
+    return acc + membersCount;
+  }, 0);
+
   const participationRate = totalMembers > 0 
     ? Math.round((membersInMinistries / totalMembers) * 100)
     : 0;
@@ -47,11 +44,11 @@ const MinistryMetrics: React.FC<{ totalMembers: number }> = ({ totalMembers }) =
         <div className="grid grid-cols-3 gap-2">
           <StatCard 
             label="Active Ministries" 
-            value={activeMinistries}
+            value={ministries.length}
             color="bg-purple-50 hover:bg-purple-100 border border-purple-200"
           />
           <StatCard 
-            label="Members Involved" 
+            label="Members" 
             value={membersInMinistries}
             color="bg-blue-50 hover:bg-blue-100 border border-blue-200"
           />
