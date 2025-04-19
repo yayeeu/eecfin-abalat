@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Member } from '@/types/database.types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,18 +16,21 @@ const StatCard: React.FC<{
     ${color} 
     rounded-xl 
     shadow-md 
-    p-4 
+    p-3  // Reduced padding
     text-center 
     transition-all 
     duration-300 
     hover:scale-105 
     hover:shadow-lg
     group
+    flex
+    flex-col
+    justify-center
   `}>
-    <div className="text-sm font-medium text-gray-600 mb-1 group-hover:text-gray-800 transition-colors">
+    <div className="text-xs font-medium text-gray-600 mb-1 group-hover:text-gray-800 transition-colors truncate">
       {label}
     </div>
-    <div className="text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors">
+    <div className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
       {value}
     </div>
   </div>
