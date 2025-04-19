@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -87,12 +86,11 @@ const ContactLogs: React.FC = () => {
     switch (activeTab) {
       case 'flagged': return 'flagged contacts';
       case 'my-logs': return 'of your contact logs';
-      case 'no-contact': return 'members without contact history';
       default: return 'all';
     }
   };
 
-  const isLoading = logsLoading || membersLoading;
+  const isLoading = logsLoading;
 
   if (isLoading) {
     return (
@@ -122,8 +120,7 @@ const ContactLogs: React.FC = () => {
             customTabs={[
               { value: 'all', label: 'All Logs' },
               { value: 'flagged', label: 'Flagged' },
-              { value: 'my-logs', label: 'My Contact Logs' },
-              { value: 'no-contact', label: 'No Contact History' }
+              { value: 'my-logs', label: 'My Contact Logs' }
             ]}
           />
 
@@ -135,12 +132,6 @@ const ContactLogs: React.FC = () => {
                   Retry
                 </Button>
               </div>
-            ) : activeTab === 'no-contact' ? (
-              <NoContactMembers
-                members={members}
-                onMemberClick={handleMemberClick}
-                onAddContact={handleAddNew}
-              />
             ) : (
               <GroupedContactLogs 
                 elders={elderData}
@@ -150,10 +141,7 @@ const ContactLogs: React.FC = () => {
             
             <div className="mt-4 flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                {activeTab === 'no-contact' 
-                  ? `Showing ${members.length} members without contact history`
-                  : `Showing ${0} ${getActiveTabLabel()} contact logs`
-                }
+                Showing {0} {getActiveTabLabel()} contact logs
               </p>
             </div>
           </TabsContent>
