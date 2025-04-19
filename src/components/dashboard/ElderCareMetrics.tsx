@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Member, ContactLog } from '@/types/database.types';
 import { Phone, MessageSquare } from 'lucide-react';
@@ -23,11 +22,13 @@ const ElderCareMetrics: React.FC<{
   contactLogs: ContactLog[];
   elderId?: string;
   displayAllActivities?: boolean;
+  displaySummary?: boolean;
 }> = ({ 
   members,
   contactLogs,
   elderId,
   displayAllActivities = false,
+  displaySummary = true,
 }) => {
   const getStatsForPeriod = (startDate: Date, endDate: Date, logs: ContactLog[]) => {
     const periodLogs = logs.filter(log => {
@@ -45,7 +46,6 @@ const ElderCareMetrics: React.FC<{
       memberTypes: {}
     };
 
-    // Count member types
     periodLogs.forEach(log => {
       const member = members.find(m => m.id === log.member_id);
       const memberType = member?.member_type_id || 'unknown';
@@ -64,7 +64,6 @@ const ElderCareMetrics: React.FC<{
   const thisWeekStats = getStatsForPeriod(thisWeekStart, thisWeekEnd, contactLogs);
   const lastWeekStats = getStatsForPeriod(lastWeekStart, lastWeekEnd, contactLogs);
 
-  // Helper to render stats section
   const renderStatsSection = (title: string, stats: ActivityStats) => (
     <div className="rounded-lg border bg-card p-4">
       <h3 className="text-xl font-semibold text-center mb-4">{title}</h3>

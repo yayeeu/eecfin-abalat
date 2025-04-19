@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllMembers, getElderMembers } from '@/lib/memberService';
@@ -125,7 +124,6 @@ const Dashboard: React.FC = () => {
                     contactLogs={contactLogs || []} 
                     elderId={currentUser?.id}
                     displayAllActivities={true}
-                    displaySummary={false}
                   />
                 </CardContent>
               </Card>
