@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { ContactLog } from '@/types/database.types';
 
 interface MyContactLogsProps {
   onMemberClick: (memberId: string) => void;
@@ -77,8 +78,8 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
     );
   }
 
-  // Group logs by member type
-  const groupedLogs = logs.reduce((acc: Record<string, any[]>, log) => {
+  // Group logs by member type with proper TypeScript typing
+  const groupedLogs: Record<string, ContactLog[]> = logs.reduce((acc: Record<string, ContactLog[]>, log) => {
     const memberType = log.member?.role || 'regular';
     if (!acc[memberType]) {
       acc[memberType] = [];
