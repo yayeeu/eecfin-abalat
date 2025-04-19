@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ContactLog } from '@/types/database.types';
 import { 
@@ -17,9 +18,8 @@ import {
   Info
 } from 'lucide-react';
 
-// Member type color mapping
 const memberTypeColors = {
-  'regular': 'bg-purple-100 text-purple-800', // Default
+  'regular': 'bg-purple-100 text-purple-800',
   'new': 'bg-green-100 text-green-800',
   'visitor': 'bg-blue-100 text-blue-800',
   'inactive': 'bg-gray-100 text-gray-800',
@@ -65,7 +65,6 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
 
   return (
     <div>
-      {/* Member type key/legend */}
       <div className="mb-4 p-4 bg-white rounded-lg border shadow-sm">
         <div className="flex items-center gap-2 mb-2">
           <Info className="h-4 w-4 text-muted-foreground" />
@@ -85,26 +84,55 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
 
       <Accordion type="multiple" className="space-y-4">
         {sortedElders.map((elder) => {
-          const groupedLogs = Object.keys(timePeriods).reduce((acc, period) => {
-            acc[period] = [];
-            return acc;
-          }, {} as Record<string, ContactLog[]>);
+          const groupedLogs: Record<string, Array<{ id: string; name: string; role?: string; logDate?: Date | null }>> = {
+            'This week': [],
+            'Last week': [],
+            '2 Weeks ago': [],
+            '3 Weeks ago': [],
+            '4 Weeks ago': [],
+            'More than 4 weeks': []
+          };
 
+          // Track processed member IDs to avoid duplicates
+          const processedMembers = new Set();
+
+          // First, process members with logs
           elder.logs.forEach(log => {
-            const logDate = new Date(log.created_at || '');
+            if (!log.member_id || !log.created_at) return;
+            
+            const logDate = new Date(log.created_at);
             const now = new Date();
             const weekDiff = Math.floor((now.getTime() - logDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+            
+            let period = 'More than 4 weeks';
+            if (weekDiff === 0) period = 'This week';
+            else if (weekDiff === 1) period = 'Last week';
+            else if (weekDiff === 2) period = '2 Weeks ago';
+            else if (weekDiff === 3) period = '3 Weeks ago';
+            else if (weekDiff === 4) period = '4 Weeks ago';
 
-            if (weekDiff === 0) groupedLogs['This week'].push(log);
-            else if (weekDiff === 1) groupedLogs['Last week'].push(log);
-            else if (weekDiff === 2) groupedLogs['2 Weeks ago'].push(log);
-            else if (weekDiff === 3) groupedLogs['3 Weeks ago'].push(log);
-            else if (weekDiff === 4) groupedLogs['4 Weeks ago'].push(log);
-            else groupedLogs['More than 4 weeks'].push(log);
+            if (!processedMembers.has(log.member_id)) {
+              processedMembers.add(log.member_id);
+              groupedLogs[period].push({
+                id: log.member_id,
+                name: log.member?.name || 'Unknown Member',
+                role: log.member?.role,
+                logDate
+              });
+            }
           });
 
-          const totalContacts = elder.logs.length;
-          const flaggedContacts = elder.logs.filter(log => log.flagged).length;
+          // Then, add members without logs or with old logs to "More than 4 weeks"
+          elder.assignedMembers.forEach(member => {
+            if (!processedMembers.has(member.id)) {
+              groupedLogs['More than 4 weeks'].push({
+                id: member.id,
+                name: member.name,
+                role: member.role,
+                logDate: null
+              });
+            }
+          });
 
           return (
             <AccordionItem 
@@ -119,13 +147,7 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
                     <div className="text-left">
                       <p className="font-semibold">{elder.name}</p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <p>{totalContacts} contact{totalContacts !== 1 ? 's' : ''} | {elder.assignedMembers.length} members</p>
-                        {flaggedContacts > 0 && (
-                          <div className="flex items-center gap-1">
-                            <Flag className="h-3 w-3 text-yellow-500" />
-                            <span>{flaggedContacts} flagged</span>
-                          </div>
-                        )}
+                        <p>{elder.logs.length} contact{elder.logs.length !== 1 ? 's' : ''} | {elder.assignedMembers.length} members</p>
                       </div>
                     </div>
                   </div>
@@ -135,7 +157,7 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
               <AccordionContent>
                 <ScrollArea className="h-[400px] px-4 py-2">
                   <div className="space-y-4">
-                    {Object.entries(groupedLogs).map(([period, logs]) => (
+                    {Object.entries(groupedLogs).map(([period, members]) => (
                       <Card key={`${elder.id}-${period}`}>
                         <CardContent className="pt-6">
                           <div className="flex items-center gap-2 mb-3">
@@ -146,21 +168,18 @@ const GroupedContactLogs: React.FC<GroupedContactLogsProps> = ({
                             )}
                             <h4 className="font-medium text-sm">
                               {period}
-                              {logs.length === 0 && " - No members contacted"}
+                              {members.length === 0 && " - No members contacted"}
                             </h4>
                           </div>
-                          {logs.length > 0 && (
+                          {members.length > 0 && (
                             <div className="flex flex-wrap gap-2">
-                              {logs.map(log => (
+                              {members.map(member => (
                                 <button
-                                  key={log.id}
-                                  onClick={() => log.member_id && onMemberClick?.(log.member_id)}
-                                  className={`inline-flex items-center px-2 py-1 rounded text-sm transition-colors ${getMemberTypeColor(log.member?.role)}`}
+                                  key={member.id}
+                                  onClick={() => onMemberClick?.(member.id)}
+                                  className={`inline-flex items-center px-2 py-1 rounded text-sm transition-colors ${getMemberTypeColor(member.role)}`}
                                 >
-                                  {log.member?.name || 'Unknown Member'}
-                                  {log.flagged && (
-                                    <AlertCircle className="h-3 w-3 ml-1 text-yellow-500" />
-                                  )}
+                                  {member.name}
                                 </button>
                               ))}
                             </div>
