@@ -56,7 +56,7 @@ export const getMinistries = async (activeOnly = false) => {
     .from('ministries')
     .select(`
       *,
-      contact_elder:members!ministries_contact_person_id_fkey(id, name, email, phone)
+      members!members_ministry_id_fkey(id, name, email, phone)
     `);
   
   if (activeOnly) {
@@ -75,6 +75,25 @@ export const getMinistries = async (activeOnly = false) => {
   return data as Ministry[];
 };
 
+export const getActiveMinistryCount = async () => {
+  if (!isSupabaseConfigured()) {
+    const count = mockMinistries.filter(m => m.status === 'active').length;
+    return Promise.resolve({ count });
+  }
+
+  const { count, error } = await supabase!
+    .from('ministries')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'active');
+
+  if (error) {
+    console.error('Error counting active ministries:', error);
+    throw error;
+  }
+
+  return { count };
+};
+
 export const getMinistry = async (id: string) => {
   // If Supabase is not configured, return mock data
   if (!isSupabaseConfigured()) {
@@ -87,7 +106,7 @@ export const getMinistry = async (id: string) => {
   
   const { data, error } = await supabase!
     .from('ministries')
-    .select('*, contact_elder:members!ministries_contact_person_id_fkey(id, name, email, phone)')
+    .select('*, members!members_ministry_id_fkey(id, name, email, phone)')
     .eq('id', id)
     .single();
   

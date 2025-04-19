@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { Member, Ministry } from '@/types/database.types';
+import { useQuery } from '@tanstack/react-query';
+import { getActiveMinistryCount } from '@/lib/ministryService';
 import { 
   BarChart, 
   Bar, 
@@ -21,11 +23,14 @@ const MinistryStats: React.FC<{
   members,
   elders 
 }) => {
-  // Filter active ministries
-  const activeMinistries = ministries.filter(m => m.status === 'active');
+  const { data: ministryCount } = useQuery({
+    queryKey: ['activeMinistryCount'],
+    queryFn: getActiveMinistryCount,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+  });
   
   // Count members by ministry
-  const membersByMinistry = activeMinistries.map(ministry => {
+  const membersByMinistry = ministries.map(ministry => {
     const count = members.filter(m => m.ministry_id === ministry.id).length;
     return {
       name: ministry.name,
@@ -37,14 +42,11 @@ const MinistryStats: React.FC<{
   // Sort by number of members (descending)
   membersByMinistry.sort((a, b) => b.members - a.members);
   
-  // Calculate minister metrics
-  const totalMinisters = activeMinistries.length;
-  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-around bg-amber-50 text-amber-800 rounded-lg p-4">
         <div className="text-center">
-          <div className="text-3xl font-bold">{totalMinisters}</div>
+          <div className="text-3xl font-bold">{ministryCount?.count || 0}</div>
           <div className="text-sm font-medium">Active Ministries</div>
         </div>
         <div className="text-center">
@@ -52,7 +54,9 @@ const MinistryStats: React.FC<{
           <div className="text-sm font-medium">Church Elders</div>
         </div>
         <div className="text-center">
-          <div className="text-3xl font-bold">{activeMinistries.length > 0 ? (members.length / activeMinistries.length).toFixed(1) : '0'}</div>
+          <div className="text-3xl font-bold">
+            {ministries.length > 0 ? (members.length / ministries.length).toFixed(1) : '0'}
+          </div>
           <div className="text-sm font-medium">Avg. Members Per Ministry</div>
         </div>
       </div>
