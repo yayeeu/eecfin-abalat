@@ -3,7 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { getMinistries } from '@/lib/ministryService';
-import { getMemberMinistries } from '@/lib/services/memberMinistryService';
+import { getAllMemberMinistries } from '@/lib/services/memberMinistryService';
 import { ChartBar } from 'lucide-react';
 
 const StatCard: React.FC<{ 
@@ -25,8 +25,8 @@ const MinistryMetrics: React.FC<{ totalMembers: number }> = ({ totalMembers }) =
   });
 
   const { data: memberMinistries = [] } = useQuery({
-    queryKey: ['memberMinistries'],
-    queryFn: getMemberMinistries,
+    queryKey: ['allMemberMinistries'],
+    queryFn: getAllMemberMinistries,
     staleTime: 30 * 60 * 1000,
   });
 

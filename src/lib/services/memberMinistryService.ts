@@ -6,6 +6,30 @@ import { Ministry } from '@/types/database.types';
 // Mock data for development mode
 const mockMemberMinistries: Record<string, string[]> = {};
 
+// Get all member ministries (for dashboard metrics)
+export const getAllMemberMinistries = async () => {
+  // If Supabase is not configured, return mock data
+  if (!isSupabaseConfigured()) {
+    console.log('Using mock data for all member ministries');
+    // Flatten all mock member ministries into a single array of objects
+    const allMemberMinistries = Object.entries(mockMemberMinistries).flatMap(
+      ([memberId, ministryIds]) => ministryIds.map(ministryId => ({ member_id: memberId, ministry_id: ministryId }))
+    );
+    return Promise.resolve(allMemberMinistries);
+  }
+  
+  const { data, error } = await supabase!
+    .from('member_ministry')
+    .select('member_id, ministry_id');
+  
+  if (error) {
+    console.error('Error fetching all member ministries:', error);
+    throw error;
+  }
+  
+  return data;
+};
+
 // Get ministries for a member
 export const getMemberMinistries = async (memberId: string) => {
   // If Supabase is not configured, return mock data
