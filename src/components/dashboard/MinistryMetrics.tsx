@@ -3,9 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { getMinistries } from '@/lib/ministryService';
-import { getMembersByMinistryId } from '@/lib/memberService';
 import { ChartBar } from 'lucide-react';
-import { Member } from '@/types/database.types';
 
 const StatCard: React.FC<{ 
   label: string; 
@@ -19,43 +17,15 @@ const StatCard: React.FC<{
 );
 
 const MinistryMetrics: React.FC<{ totalMembers: number }> = ({ totalMembers }) => {
-  const { data: ministries = [] } = useQuery({
+  const { data: ministries = [], isLoading: ministriesLoading } = useQuery({
     queryKey: ['ministries'],
     queryFn: () => getMinistries(true),
     staleTime: 30 * 60 * 1000,
   });
 
-  // Get all ministry-member relationships
-  const { data: ministryMembersMap = {}, isLoading } = useQuery({
-    queryKey: ['ministryMembers'],
-    queryFn: async () => {
-      // Create a map to store members for each ministry
-      const ministryMembersMap: Record<string, number> = {};
-      
-      // For each ministry, fetch its members and count them
-      await Promise.all(
-        ministries.map(async (ministry) => {
-          try {
-            const memberIds = await getMembersByMinistryId(ministry.id);
-            ministryMembersMap[ministry.id] = memberIds.length;
-          } catch (error) {
-            console.error(`Error fetching members for ministry ${ministry.id}:`, error);
-            ministryMembersMap[ministry.id] = 0;
-          }
-        })
-      );
-      
-      return ministryMembersMap;
-    },
-    enabled: ministries.length > 0,
-    staleTime: 30 * 60 * 1000,
-  });
-
-  // Calculate metrics
-  const membersInMinistries = Object.values(ministryMembersMap).reduce(
-    (total, count) => total + count, 
-    0
-  );
+  const membersInMinistries = ministries.reduce((acc, ministry) => {
+    return acc + (ministry.members?.length || 0);
+  }, 0);
 
   const participationRate = totalMembers > 0 
     ? Math.round((membersInMinistries / totalMembers) * 100)
@@ -68,15 +38,10 @@ const MinistryMetrics: React.FC<{ totalMembers: number }> = ({ totalMembers }) =
         <ChartBar className="w-6 h-6 mx-auto mt-2 opacity-75" />
       </div>
       <CardContent className="pt-6">
-        <div className="grid grid-cols-3 gap-2">
-          <StatCard 
-            label="Active Ministries" 
-            value={ministries.length}
-            color="bg-purple-50 hover:bg-purple-100 border border-purple-200"
-          />
+        <div className="grid grid-cols-2 gap-2">
           <StatCard 
             label="Members" 
-            value={isLoading ? "..." : membersInMinistries}
+            value={ministriesLoading ? "..." : membersInMinistries}
             color="bg-blue-50 hover:bg-blue-100 border border-blue-200"
           />
           <StatCard 

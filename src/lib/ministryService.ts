@@ -55,7 +55,11 @@ export const getMinistries = async (activeOnly = false) => {
   
   let query = supabase!
     .from('ministries')
-    .select('*, contact_elder:members!ministries_contact_person_id_fkey(id, name, email, phone)');
+    .select(`
+      *,
+      contact_elder:members!ministries_contact_person_id_fkey(id, name, email, phone),
+      members:members(*)
+    `);
   
   if (activeOnly) {
     query = query.eq('status', 'active');

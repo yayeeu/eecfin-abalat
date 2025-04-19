@@ -1,4 +1,3 @@
-
 export interface Slide {
   id: string;
   created_at?: string;
@@ -21,6 +20,7 @@ export interface Ministry {
   photo?: string;
   contact_person_id?: string;
   contact_elder?: Member;
+  members?: Member[];
 }
 
 export interface Role {
