@@ -1,35 +1,34 @@
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getContactLogs } from '@/lib/contactLogService';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getContactLogs, deleteContactLog } from '@/lib/contactLogService';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Card, CardContent } from '@/components/ui/card';
-import { formatDistanceToNow } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 import { ContactLog } from '@/types/database.types';
+import ContactLogItem from './ContactLogItem';
+import ContactLogDialog from './ContactLogDialog';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from '@/components/ui/pagination';
 
 interface MyContactLogsProps {
   onMemberClick: (memberId: string) => void;
 }
 
-const memberTypeColors = {
-  'regular': 'bg-purple-100 text-purple-800',
-  'new': 'bg-green-100 text-green-800',
-  'visitor': 'bg-blue-100 text-blue-800',
-  'inactive': 'bg-gray-100 text-gray-800',
-  'elder': 'bg-yellow-100 text-yellow-800'
-} as const;
+const LOGS_PER_PAGE = 20;
 
 const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<ContactLog | null>(null);
   
   const { data: logs = [], isLoading, isError } = useQuery({
     queryKey: ['my-contact-logs'],
@@ -46,6 +45,40 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
     }
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteContactLog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-contact-logs'] });
+      toast({
+        title: 'Success',
+        description: 'Contact log deleted successfully',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete contact log',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleEdit = (log: ContactLog) => {
+    setSelectedLog(log);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (logId: string) => {
+    if (window.confirm('Are you sure you want to delete this contact log?')) {
+      deleteMutation.mutate(logId);
+    }
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setSelectedLog(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -56,7 +89,7 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
 
   if (isError) {
     return (
-      <Alert variant="destructive" className="my-4">
+      <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
@@ -68,86 +101,75 @@ const MyContactLogs: React.FC<MyContactLogsProps> = ({ onMemberClick }) => {
 
   if (logs.length === 0) {
     return (
-      <Alert className="my-4 bg-blue-50 border-blue-200">
+      <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>No contact logs</AlertTitle>
         <AlertDescription>
-          You don't have any contact logs yet. Contact logs will appear here when you record interactions with members.
+          You don't have any contact logs yet.
         </AlertDescription>
       </Alert>
     );
   }
 
-  // Group logs by member type with proper TypeScript typing
-  const groupedLogs: Record<string, ContactLog[]> = logs.reduce((acc: Record<string, ContactLog[]>, log) => {
-    const memberType = log.member?.role || 'regular';
-    if (!acc[memberType]) {
-      acc[memberType] = [];
-    }
-    acc[memberType].push(log);
-    return acc;
-  }, {});
+  // Sort logs by created_at in descending order
+  const sortedLogs = [...logs].sort((a, b) => {
+    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+  });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedLogs.length / LOGS_PER_PAGE);
+  const startIndex = (currentPage - 1) * LOGS_PER_PAGE;
+  const endIndex = startIndex + LOGS_PER_PAGE;
+  const currentLogs = sortedLogs.slice(startIndex, endIndex);
 
   return (
-    <div className="space-y-4">
-      <div className="mb-4 p-4 bg-white rounded-lg border shadow-sm">
-        <h3 className="font-medium mb-2">Member Types</h3>
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(memberTypeColors).map(([type, colorClass]) => (
-            <span 
-              key={type}
-              className={`px-2 py-1 rounded-full text-xs capitalize ${colorClass}`}
-            >
-              {type}
-            </span>
-          ))}
-        </div>
+    <div className="space-y-6">
+      <div>
+        {currentLogs.map((log) => (
+          <ContactLogItem
+            key={log.id}
+            log={log}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
       </div>
 
-      <Accordion type="multiple" className="space-y-4">
-        {Object.entries(groupedLogs).map(([memberType, logs]) => (
-          <AccordionItem
-            key={memberType}
-            value={memberType}
-            className="bg-white rounded-lg border shadow-sm"
-          >
-            <AccordionTrigger className="px-4 py-2 hover:no-underline">
-              <div className="flex items-center justify-between w-full">
-                <div>
-                  <p className="font-semibold capitalize">{memberType}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {logs.length} contact{logs.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4">
-              <div className="space-y-4">
-                {logs.map((log) => (
-                  <Card key={log.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent 
-                      className="p-4"
-                      onClick={() => log.member_id && onMemberClick(log.member_id)}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">{log.member?.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {log.contact_type} - {formatDistanceToNow(new Date(log.created_at || ''), { addSuffix: true })}
-                          </p>
-                          {log.notes && (
-                            <p className="mt-2 text-sm">{log.notes}</p>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+      {totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(page)}
+                  isActive={currentPage === page}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
+
+      <ContactLogDialog
+        isOpen={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        selectedLog={selectedLog}
+        onSuccess={closeForm}
+      />
     </div>
   );
 };
