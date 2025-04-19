@@ -3,22 +3,43 @@ import { Member } from '@/types/database.types';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-
-// Import the function to get member types
 import { getMemberTypes } from '@/lib/services/memberTypeService';
 
-interface StatCardProps {
-  label: string;
-  value: number;
-  color?: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ label, value, color = 'bg-slate-100' }) => (
-  <div className={`${color} rounded-lg shadow p-4 text-center`}>
-    <div className="text-lg font-semibold text-gray-700">{label}</div>
-    <div className="text-3xl font-bold text-gray-900">{value}</div>
+// Enhanced StatCard component with more dynamic styling
+const StatCard: React.FC<{ 
+  label: string; 
+  value: number; 
+  color?: string 
+}> = ({ label, value, color = 'bg-slate-100' }) => (
+  <div className={`
+    ${color} 
+    rounded-xl 
+    shadow-md 
+    p-4 
+    text-center 
+    transition-all 
+    duration-300 
+    hover:scale-105 
+    hover:shadow-lg
+    group
+  `}>
+    <div className="text-sm font-medium text-gray-600 mb-1 group-hover:text-gray-800 transition-colors">
+      {label}
+    </div>
+    <div className="text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors">
+      {value}
+    </div>
   </div>
 );
+
+// Predefined color palette for member types
+const memberTypeColors: Record<string, string> = {
+  'member': 'bg-blue-50 hover:bg-blue-100 border border-blue-200',
+  'regular': 'bg-green-50 hover:bg-green-100 border border-green-200',
+  'visitor': 'bg-purple-50 hover:bg-purple-100 border border-purple-200',
+  'remote': 'bg-orange-50 hover:bg-orange-100 border border-orange-200',
+  'default': 'bg-slate-50 hover:bg-slate-100 border border-slate-200'
+};
 
 interface MemberTypeCount {
   id: string;
@@ -33,7 +54,7 @@ interface MemberStats {
 }
 
 // Map member types to colors
-const memberTypeColors: Record<string, string> = {
+const memberTypeColorsOld: Record<string, string> = {
   'member': 'bg-blue-50',
   'regular': 'bg-green-50',
   'visitor': 'bg-purple-50',
@@ -106,7 +127,7 @@ const MemberMetrics: React.FC<{
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* TOTAL in EECFIN */}
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden animate-fade-in">
           <div className="bg-blue-600 p-4 text-white text-center">
             <h3 className="text-xl font-semibold">TOTAL in EECFIN</h3>
             <div className="text-4xl font-bold mt-2">{totalStats.total}</div>
@@ -131,8 +152,8 @@ const MemberMetrics: React.FC<{
           </CardContent>
         </Card>
 
-        {/* UNDER MY CARE - Always show this section */}
-        <Card className="overflow-hidden">
+        {/* UNDER MY CARE */}
+        <Card className="overflow-hidden animate-fade-in">
           <div className="bg-green-600 p-4 text-white text-center">
             <h3 className="text-xl font-semibold">UNDER MY CARE</h3>
             <div className="text-4xl font-bold mt-2">{myCareStats.total}</div>
