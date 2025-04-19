@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
@@ -78,7 +79,7 @@ const CustomHeader = () => {
               Profile
             </Link>
             <Button 
-              className="w-full mt-3 flex items-center gap-2" 
+              className="w-full mt-3 flex items-center gap-2 justify-center" 
               variant="outline" 
               onClick={signOut}
             >
