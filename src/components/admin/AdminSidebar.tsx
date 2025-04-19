@@ -14,7 +14,6 @@ import {
 import { 
   Users, 
   LayoutDashboard, 
-  BookOpen,
   UserCircle,
   MessageSquare,
   UserCog
@@ -85,25 +84,10 @@ const AdminSidebar: React.FC = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Content</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem className={isActive("/admin/manage-ministries") ? "active" : ""}>
-                <SidebarMenuButton asChild>
-                  <Link to="/admin/manage-ministries">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    <span>Manage Ministries</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
 };
 
 export default AdminSidebar;
+

@@ -18,7 +18,6 @@ const ProtectedRoutes = () => {
         <Route path="/admin/dashboard" element={<Admin />} />
         <Route path="/admin/all-members" element={<Admin />} />
         <Route path="/admin/manage-members" element={<Admin />} />
-        <Route path="/admin/manage-ministries" element={<Admin />} />
         <Route path="/admin/contact-logs" element={<Admin />} />
         <Route path="/admin/add-member" element={<AddMember />} />
         <Route path="/admin/edit-member/:memberId" element={<AddMember />} />
@@ -30,3 +29,4 @@ const ProtectedRoutes = () => {
 };
 
 export default ProtectedRoutes;
+
