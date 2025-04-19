@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -89,7 +90,7 @@ const ContactLogs: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (logsLoading || membersLoading) {
     return (
       <div className="flex justify-center items-center p-12">
         <Loader2 className="h-8 w-8 animate-spin text-eecfin-navy" />
@@ -132,7 +133,7 @@ const ContactLogs: React.FC = () => {
             
             <div className="mt-4 flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                Showing {0} {getActiveTabLabel()} contact logs
+                Showing {activeTab === 'all' ? elderData.length : 0} {getActiveTabLabel()} contact logs
               </p>
             </div>
           </TabsContent>
