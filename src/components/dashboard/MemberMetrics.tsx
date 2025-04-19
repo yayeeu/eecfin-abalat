@@ -39,6 +39,16 @@ const memberTypeColors: Record<string, string> = {
   'default': 'bg-slate-100'
 };
 
+// Map of member type IDs to readable names
+const memberTypeNames: Record<string, string> = {
+  // These would typically come from the database, but we'll use some defaults
+  // as fallbacks for common member types
+  'regular': 'Regular',
+  'visitor': 'Visitor',
+  'member': 'Member',
+  'remote': 'Remote',
+};
+
 const MemberMetrics: React.FC<{ 
   members: Member[], 
   myMembers?: Member[] 
@@ -51,8 +61,10 @@ const MemberMetrics: React.FC<{
     membersList.forEach(member => {
       const typeId = member.member_type_id || 'unknown';
       if (!counts[typeId]) {
-        // Use the member_type_id as the name fallback since member_type_name doesn't exist
-        const typeName = typeId; // Using typeId as fallback
+        // Try to use the member type name from the mapping, or fallback to a formatted typeId
+        const typeName = memberTypeNames[typeId] || 
+                          (typeId === 'unknown' ? 'Unknown' : 
+                          typeId.charAt(0).toUpperCase() + typeId.slice(1));
         counts[typeId] = { count: 0, name: typeName };
       }
       counts[typeId].count += 1;
@@ -61,7 +73,7 @@ const MemberMetrics: React.FC<{
     // Convert to array format
     return Object.entries(counts).map(([id, { count, name }]) => ({
       id,
-      name: name.charAt(0).toUpperCase() + name.slice(1), // Capitalize first letter
+      name, // Use the proper name lookup
       count,
       color: memberTypeColors[id.toLowerCase()] || memberTypeColors.default
     }));
