@@ -1,33 +1,20 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { getContactLogs } from '@/lib/contactLogService';
 import { getAllMembers } from '@/lib/memberService';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { useNavigate } from 'react-router-dom';
-import { ContactLog, Member } from '@/types/database.types';
-import SearchBar from '@/components/members/SearchBar';
-import ViewToggle from '@/components/members/ViewToggle';
+import { ContactLog } from '@/types/database.types';
 import FilterTabs from '@/components/members/FilterTabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { format, formatDistanceToNow, startOfWeek, subWeeks, isWithinInterval } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Loader2, 
-  AlertTriangle, 
-  MessageSquare, 
-  Phone, 
-  Mail, 
-  UserPlus, 
-  HelpCircle, 
-  CalendarDays,
-  Clock
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ContactLogForm from '@/components/contact/ContactLogForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import GroupedContactLogs from '@/components/contact/GroupedContactLogs';
+import ContactLogsHeader from '@/components/contact/ContactLogsHeader';
+import ContactLogsControls from '@/components/contact/ContactLogsControls';
+import NoContactMembers from '@/components/contact/NoContactMembers';
+import ContactLogDialog from '@/components/contact/ContactLogDialog';
 
 const ContactLogs: React.FC = () => {
   const { toast } = useToast();
@@ -62,7 +49,6 @@ const ContactLogs: React.FC = () => {
   const {
     data: members = [],
     isLoading: membersLoading,
-    isError: membersError
   } = useQuery({
     queryKey: ['all-members'],
     queryFn: getAllMembers,
@@ -87,14 +73,14 @@ const ContactLogs: React.FC = () => {
     setIsFormOpen(true);
   };
 
+  const handleMemberClick = (memberId: string) => {
+    navigate(`/admin/edit-member/${memberId}`);
+  };
+
   const closeForm = () => {
     setIsFormOpen(false);
     setSelectedLog(null);
     refetch();
-  };
-
-  const handleMemberClick = (memberId: string) => {
-    navigate(`/admin/edit-member/${memberId}`);
   };
 
   const getActiveTabLabel = () => {
@@ -107,7 +93,6 @@ const ContactLogs: React.FC = () => {
   };
 
   const isLoading = logsLoading || membersLoading;
-  const isError = logsError || membersError;
 
   if (isLoading) {
     return (
@@ -120,24 +105,15 @@ const ContactLogs: React.FC = () => {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Contact Logs</h1>
-        <Button onClick={handleAddNew} className="flex items-center gap-2">
-          <UserPlus className="h-4 w-4" />
-          Add New Contact Log
-        </Button>
-      </div>
+      <ContactLogsHeader onAddNew={handleAddNew} />
       
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between mb-4">
-          <SearchBar 
-            searchTerm={searchTerm} 
-            onSearchChange={handleSearchChange} 
-          />
-          <div className="flex gap-2">
-            <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
-          </div>
-        </div>
+        <ContactLogsControls
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <FilterTabs 
@@ -152,7 +128,7 @@ const ContactLogs: React.FC = () => {
           />
 
           <TabsContent value={activeTab} className="mt-0">
-            {isError ? (
+            {logsError ? (
               <div className="text-center py-8">
                 <p className="text-red-500">Error loading contact logs</p>
                 <Button onClick={() => refetch()} className="mt-4">
@@ -160,75 +136,11 @@ const ContactLogs: React.FC = () => {
                 </Button>
               </div>
             ) : activeTab === 'no-contact' ? (
-              <div className="space-y-8">
-                <div key="no-contact" className="mb-8">
-                  <h2 className="text-xl font-semibold mb-4 flex items-center">
-                    <Clock className="mr-2 h-5 w-5" />
-                    Contacted Long Time Ago
-                  </h2>
-                  
-                  {members.length > 0 ? (
-                    <Card className="mb-4">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Members Without Contact History</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Member</TableHead>
-                              <TableHead>Contact Info</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {members.map(member => (
-                              <TableRow key={member.id}>
-                                <TableCell>
-                                  <button 
-                                    className="text-blue-600 hover:underline font-medium"
-                                    onClick={() => member.id && handleMemberClick(member.id)}
-                                  >
-                                    {member.name || 'Unknown Member'}
-                                  </button>
-                                </TableCell>
-                                <TableCell>
-                                  {member.email && <div className="text-sm">{member.email}</div>}
-                                  {member.phone && <div className="text-sm">{member.phone}</div>}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    No Contact
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => {
-                                      setIsFormOpen(true);
-                                      setSelectedLog(null);
-                                      setSelectedElder(null);
-                                    }}
-                                  >
-                                    Add Contact
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div className="text-center py-8 bg-gray-50 rounded">
-                      <p className="text-gray-500">All members have been contacted</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <NoContactMembers
+                members={members}
+                onMemberClick={handleMemberClick}
+                onAddContact={handleAddNew}
+              />
             ) : (
               <GroupedContactLogs 
                 elders={elderData}
@@ -248,22 +160,13 @@ const ContactLogs: React.FC = () => {
         </Tabs>
       </div>
       
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedLog ? 'Edit Contact Log' : 'Add New Contact Log'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <ContactLogForm
-            initialData={selectedLog || undefined}
-            memberId={activeTab === 'no-contact' && selectedElder ? undefined : undefined}
-            onSuccess={closeForm}
-            onCancel={closeForm}
-          />
-        </DialogContent>
-      </Dialog>
+      <ContactLogDialog
+        isOpen={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        selectedLog={selectedLog}
+        elderId={selectedElder || undefined}
+        onSuccess={closeForm}
+      />
     </div>
   );
 };
