@@ -89,6 +89,10 @@ export const getContactLogs = async (filters?: {
       return transformedData;
     }
 
+    // Get the elder role ID
+    const elderRoleId = await getRoleIdByName('elder');
+    console.log('Elder role ID:', elderRoleId);
+
     // First get all elders and their assigned members
     let query = supabase!
       .from('members')
@@ -124,7 +128,7 @@ export const getContactLogs = async (filters?: {
           )
         )
       `)
-      .eq('role_id', (await getRoleIdByName('elder'))) // Using a function to get the elder role ID
+      .eq('role_id', elderRoleId) // Use the retrieved elder role ID
       .order('name');
     
     const { data: elders, error: eldersError } = await query;
@@ -133,6 +137,8 @@ export const getContactLogs = async (filters?: {
       console.error('Error fetching elders and contact logs:', eldersError);
       throw eldersError;
     }
+    
+    console.log('Fetched elders:', elders);
     
     // Format data to include all assigned members, even those without logs
     const formattedData = elders.map(elder => {
