@@ -1,102 +1,81 @@
 
 import React from 'react';
 import { Member } from '@/types/database.types';
-import { Users, User, UserCheck, Baby } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from "@/integrations/supabase/client";
 
-interface MemberType {
-  id: string;
-  name: string | null;
-  count: number;
+interface StatCardProps {
+  label: string;
+  value: number;
 }
 
-const MemberMetrics: React.FC<{ members: Member[] }> = ({ members }) => {
-  // Calculate basic metrics
-  const totalMembers = members.length;
-  const activeMembers = members.filter(m => m.status === 'active').length;
-  const inactiveMembers = totalMembers - activeMembers;
-  
-  // Calculate total children for active members
-  const totalChildren = members
-    .filter(m => m.status === 'active')
-    .reduce((sum, member) => sum + (member.num_children || 0), 0);
-  
-  // Fetch member types from database
-  const { data: memberTypes = [], isLoading } = useQuery({
-    queryKey: ['memberTypes'],
-    queryFn: async () => {
-      // Get all member types
-      const { data: types, error: typesError } = await supabase
-        .from('member_type')
-        .select('id, name');
-      
-      if (typesError) {
-        console.error('Error fetching member types:', typesError);
-        return [];
-      }
-      
-      // Calculate counts for each member type
-      return types.map(type => {
-        const count = members.filter(m => m.member_type_id === type.id).length;
-        return { ...type, count };
-      });
-    },
-  });
-  
-  // Basic metrics cards data
-  const metrics = [
-    { icon: Users, label: 'Total Members', value: totalMembers, color: 'bg-red-100 text-red-700' },
-    { icon: UserCheck, label: 'Active', value: activeMembers, color: 'bg-green-100 text-green-700' },
-    { icon: User, label: 'Inactive', value: inactiveMembers, color: 'bg-gray-100 text-gray-700' },
-    { icon: Baby, label: 'Children', value: totalChildren, color: 'bg-purple-100 text-purple-700' },
-  ];
-  
-  // Generate an array of colors for member types
-  const typeColors = [
-    'bg-blue-100 text-blue-700',
-    'bg-amber-100 text-amber-700',
-    'bg-indigo-100 text-indigo-700',
-    'bg-emerald-100 text-emerald-700',
-    'bg-rose-100 text-rose-700',
-    'bg-cyan-100 text-cyan-700',
-    'bg-orange-100 text-orange-700',
-    'bg-violet-100 text-violet-700',
-  ];
-  
+const StatCard: React.FC<StatCardProps> = ({ label, value }) => (
+  <div className="bg-white rounded-lg shadow p-4 text-center">
+    <div className="text-lg font-semibold text-gray-700">{label}</div>
+    <div className="text-3xl font-bold text-gray-900">{value}</div>
+  </div>
+);
+
+interface MemberStats {
+  total: number;
+  members: number;
+  regulars: number;
+  visitors: number;
+  remote: number;
+}
+
+const MemberMetrics: React.FC<{ 
+  members: Member[], 
+  myMembers?: Member[] 
+}> = ({ members, myMembers }) => {
+  // Calculate total stats
+  const totalStats: MemberStats = {
+    total: members.length,
+    members: members.filter(m => m.member_type_id === 'member').length,
+    regulars: members.filter(m => m.member_type_id === 'regular').length,
+    visitors: members.filter(m => m.member_type_id === 'visitor').length,
+    remote: members.filter(m => m.member_type_id === 'remote').length,
+  };
+
+  // Calculate stats for members under my care
+  const myCareStats: MemberStats | null = myMembers ? {
+    total: myMembers.length,
+    members: myMembers.filter(m => m.member_type_id === 'member').length,
+    regulars: myMembers.filter(m => m.member_type_id === 'regular').length,
+    visitors: myMembers.filter(m => m.member_type_id === 'visitor').length,
+    remote: myMembers.filter(m => m.member_type_id === 'remote').length,
+  } : null;
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {metrics.map((metric, i) => (
-          <div key={i} className={`rounded-lg p-4 ${metric.color} flex flex-col items-center justify-center text-center`}>
-            <metric.icon className="h-8 w-8 mb-2" />
-            <div className="text-2xl font-bold">{metric.value}</div>
-            <div className="text-xs font-medium">{metric.label}</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* TOTAL in EECFIN */}
+        <div className="space-y-4">
+          <div className="bg-white rounded-lg shadow p-6 text-center">
+            <div className="text-xl font-semibold text-gray-700">TOTAL in EECFIN</div>
+            <div className="text-4xl font-bold text-gray-900 mt-2">{totalStats.total}</div>
           </div>
-        ))}
-      </div>
-      
-      {/* Member Types Section */}
-      <div className="mt-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Member Types</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {isLoading ? (
-            <div className="col-span-full text-center py-2">Loading member types...</div>
-          ) : memberTypes.length === 0 ? (
-            <div className="col-span-full text-center py-2 text-gray-500">No member types defined</div>
-          ) : (
-            memberTypes.map((type, index) => (
-              <div 
-                key={type.id} 
-                className={`rounded-lg p-3 ${typeColors[index % typeColors.length]} flex flex-col items-center justify-center text-center`}
-              >
-                <User className="h-6 w-6 mb-1" />
-                <div className="text-lg font-bold">{type.count}</div>
-                <div className="text-xs font-medium">{type.name || 'Unnamed Type'}</div>
-              </div>
-            ))
-          )}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <StatCard label="Members" value={totalStats.members} />
+            <StatCard label="Regulars" value={totalStats.regulars} />
+            <StatCard label="Visitors" value={totalStats.visitors} />
+            <StatCard label="Remote" value={totalStats.remote} />
+          </div>
         </div>
+
+        {/* UNDER MY CARE */}
+        {myCareStats && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg shadow p-6 text-center">
+              <div className="text-xl font-semibold text-gray-700">UNDER MY CARE</div>
+              <div className="text-4xl font-bold text-gray-900 mt-2">{myCareStats.total}</div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <StatCard label="Members" value={myCareStats.members} />
+              <StatCard label="Regulars" value={myCareStats.regulars} />
+              <StatCard label="Visitors" value={myCareStats.visitors} />
+              <StatCard label="Remote" value={myCareStats.remote} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

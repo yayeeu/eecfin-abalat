@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/accordion";
 
 const Dashboard: React.FC = () => {
-  // Fetch current user data first with shorter staleTime
   const { data: currentUser, isLoading: userLoading } = useQuery<Member | null>({
     queryKey: ['currentUser'],
     queryFn: getCurrentUser,
@@ -24,7 +23,6 @@ const Dashboard: React.FC = () => {
     retry: 1,
   });
 
-  // Only fetch member data after current user is loaded
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ['members'],
     queryFn: getAllMembers,
@@ -32,7 +30,6 @@ const Dashboard: React.FC = () => {
     enabled: !userLoading, // Only run when user is loaded
   });
 
-  // Run these queries in parallel after user is loaded
   const { data: elders, isLoading: eldersLoading } = useQuery({
     queryKey: ['elders'],
     queryFn: getElderMembers,
@@ -40,7 +37,6 @@ const Dashboard: React.FC = () => {
     enabled: !userLoading, // Only run when user is loaded
   });
 
-  // Only fetch myMembers and contactLogs if current user exists and is an elder
   const isElder = currentUser?.roles?.name === 'elder';
   
   const { data: myMembers, isLoading: myMembersLoading } = useQuery({
@@ -57,10 +53,8 @@ const Dashboard: React.FC = () => {
     enabled: !!currentUser?.id && isElder,
   });
 
-  // Import getMembersByElderId here for code organization
   const getMembersByElderId = async (elderId: string) => {
     try {
-      // Re-use the imported function
       const result = await import('@/lib/memberService').then(module => 
         module.getMembersByElderId(elderId)
       );
@@ -71,13 +65,11 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Determine if we're still loading based on query dependencies
   const isLoading = userLoading || 
     membersLoading || 
     eldersLoading || 
     (isElder && (myMembersLoading || contactLogsLoading));
 
-  // Show skeleton state while loading
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-12">
@@ -89,7 +81,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Accordion type="multiple" defaultValue={["general-stats", "recent-activities"]} className="space-y-4">
+      <Accordion type="multiple" className="space-y-4">
         <AccordionItem value="general-stats" className="border rounded-lg">
           <AccordionTrigger className="px-4">
             <h3 className="text-xl font-semibold">General Stats</h3>
@@ -97,7 +89,10 @@ const Dashboard: React.FC = () => {
           <AccordionContent>
             <Card>
               <CardContent className="pt-6">
-                <MemberMetrics members={members || []} />
+                <MemberMetrics 
+                  members={members || []} 
+                  myMembers={myMembers} 
+                />
               </CardContent>
             </Card>
           </AccordionContent>
