@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { UserCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getMemberTypes } from '@/lib/services/memberTypeService';
+import MinistryMetrics from './MinistryMetrics';
 
 const StatCard: React.FC<{ 
   label: string; 
@@ -111,8 +112,8 @@ const MemberMetrics: React.FC<{
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="overflow-hidden animate-fade-in">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="overflow-hidden animate-fade-in md:col-span-1">
           <div className="bg-blue-600 p-4 text-white text-center">
             <h3 className="text-xl font-semibold">TOTAL in EECFIN</h3>
             <div className="text-4xl font-bold mt-2">{totalStats.total}</div>
@@ -137,7 +138,7 @@ const MemberMetrics: React.FC<{
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden animate-fade-in">
+        <Card className="overflow-hidden animate-fade-in md:col-span-1">
           <div className="bg-green-600 p-4 text-white text-center">
             <h3 className="text-xl font-semibold">UNDER MY CARE</h3>
             <div className="text-4xl font-bold mt-2">{myCareStats.total}</div>
@@ -162,6 +163,8 @@ const MemberMetrics: React.FC<{
             )}
           </CardContent>
         </Card>
+
+        <MinistryMetrics totalMembers={members.length} />
       </div>
     </div>
   );
