@@ -54,7 +54,7 @@ const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, onClose }) 
             <div>
               <CardTitle className="text-2xl">{member.name || 'Unnamed Member'}</CardTitle>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant={member.status === 'active' ? 'success' : 'secondary'}>
+                <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
                   {member.status === 'active' ? 'Active' : 'Inactive'}
                 </Badge>
                 <span className="text-sm text-gray-500">

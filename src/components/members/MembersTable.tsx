@@ -112,7 +112,7 @@ const MembersTable: React.FC<MembersTableProps> = ({
               <TableCell>
                 <Badge 
                   variant={
-                    member.status === 'active' ? 'success' : 
+                    member.status === 'active' ? 'default' : 
                     member.status === 'inactive' ? 'secondary' : 
                     'outline'
                   }
