@@ -8,6 +8,7 @@ import AddMember from "../pages/AddMember";
 import NotFound from "../pages/NotFound";
 import ManageMembers from "../pages/ManageMembers";
 import ContactLogs from "../pages/ContactLogs";
+import ManageMinistries from "../pages/ManageMinistries";
 
 const ProtectedRoutes = () => {
   return (
@@ -19,6 +20,7 @@ const ProtectedRoutes = () => {
         <Route path="/admin/all-members" element={<Admin />} />
         <Route path="/admin/manage-members" element={<Admin />} />
         <Route path="/admin/contact-logs" element={<Admin />} />
+        <Route path="/admin/manage-ministries" element={<ManageMinistries />} />
         <Route path="/admin/add-member" element={<AddMember />} />
         <Route path="/admin/edit-member/:memberId" element={<AddMember />} />
         <Route path="/admin/profile" element={<Profile />} />
@@ -29,4 +31,3 @@ const ProtectedRoutes = () => {
 };
 
 export default ProtectedRoutes;
-

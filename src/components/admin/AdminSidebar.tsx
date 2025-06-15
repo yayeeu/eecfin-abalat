@@ -16,7 +16,8 @@ import {
   LayoutDashboard, 
   UserCircle,
   MessageSquare,
-  UserCog
+  UserCog,
+  Church
 } from "lucide-react";
 
 const AdminSidebar: React.FC = () => {
@@ -84,10 +85,25 @@ const AdminSidebar: React.FC = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Ministry</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem className={isActive("/admin/manage-ministries") ? "active" : ""}>
+                <SidebarMenuButton asChild>
+                  <Link to="/admin/manage-ministries">
+                    <Church className="mr-2 h-4 w-4" />
+                    <span>Manage Ministries</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
 };
 
 export default AdminSidebar;
-
