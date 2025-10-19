@@ -1,21 +1,24 @@
 services:
   eecfin:
-    container_name: eecfin-web
+    container_name: eecfin-web-prd
     build:
       context: .
-    restart: no #unless-stopped
+    restart: unless-stopped
     #ports:
-    #  - "8080:8080sss"
+     # - "8080:8080"
     environment:
       - HOST=0.0.0.0
+      - VIRTUAL_HOST=eecfin.org
+      - VIRTUAL_PORT=8080
+      - LETSENCRYPT_HOST=eecfin.org 
+      - LETSENCRYPT_EMAIL=eecfin.admin@eecfin.org 
+     # - CHOKIDAR_USEPOLLING=true
     networks:
       - nginx_proxy
     volumes:
       - ./:/app       # Mount your code from host
       - /app/node_modules   # Prevent overwriting container's node_modules
    
-    
-
 networks:
   nginx_proxy:
     external: true 
